@@ -20,8 +20,8 @@ export default function App() {
         <Links />
       </head>
       <body className="h-screen overflow-hidden">
-        <div className="h-full flex flex-col bg-gray-800">
-          <div>
+        <div className="h-full flex flex-col">
+          <div className="bg-gray-800">
             <img
               src="/remix-logo-new@dark.png"
               alt="Remix Logo: Colorful letters glowing on a dark background"

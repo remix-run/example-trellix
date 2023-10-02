@@ -1,11 +1,15 @@
 import { type Company } from "../../fake-data";
 
 export function groupCompanies(companies: Company[], field: keyof Company) {
-  return companies.reduce((acc, company) => {
+  let groups = companies.reduce((acc, company) => {
     const key = company[field];
     const current = acc[key] || [];
     return { ...acc, [key]: [...current, company] };
   }, {} as Record<string, Company[]>);
+  for (let key in groups) {
+    groups[key].sort((a, b) => a.order - b.order);
+  }
+  return groups;
 }
 
 export function sortByStatusOrder(order: string[]) {

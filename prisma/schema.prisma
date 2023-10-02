@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id     String  @id @default(uuid())
+  email  String  @unique
+  boards Board[]
+
+  Password Password?
+}
+
+model Password {
+  id        String  @id @default(uuid())
+  salt      String
+  hash      String
+  Account   Account @relation(fields: [accountId], references: [id])
+  accountId String  @unique
+}
+
+model Board {
+  id        Int      @id @default(autoincrement())
+  name      String
+  color     String   @default("#e0e0e0")
+  createdAt DateTime @default(now())
+  columns   Column[]
+  Account   Account? @relation(fields: [accountId], references: [id])
+  accountId String?
+}
+
+model Column {
+  id      Int    @id @default(autoincrement())
+  name    String
+  items   Item[]
+  Board   Board? @relation(fields: [boardId], references: [id])
+  boardId Int?
+}
+
+model Item {
+  id      Int     @id @default(autoincrement())
+  title   String
+  content String?
+
+  // we split the difference between the prev/next items. If an item is dropped
+  // between 1.00 and 2.00 it will be 1.50. If dropped between 1.50 and 2.00 it
+  // will be 1.75, etc.
+  order Float
+
+  Column   Column? @relation(fields: [columnId], references: [id])
+  columnId Int?
+}
