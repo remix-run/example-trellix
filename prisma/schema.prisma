@@ -39,6 +39,7 @@ model Board {
 model Column {
   id      Int    @id @default(autoincrement())
   name    String
+  order   Float  @default(0)
   items   Item[]
   Board   Board? @relation(fields: [boardId], references: [id])
   boardId Int?

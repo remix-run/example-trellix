@@ -1,0 +1,25 @@
+import iconsHref from "./icons.svg";
+
+export function Icon({
+  name,
+  size = "md",
+  spin = false,
+}: {
+  name: string;
+  size?: "md" | "xl";
+  spin?: boolean;
+}) {
+  let classNames = {
+    md: "w-4 h-4",
+    xl: "w-8 h-8",
+  };
+  return (
+    <svg
+      className={`${classNames[size]} inline self-center ${
+        spin ? "animate-spin" : ""
+      }`}
+    >
+      <use href={`${iconsHref}#${name}`} />
+    </svg>
+  );
+}

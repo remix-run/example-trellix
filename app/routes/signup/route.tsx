@@ -41,7 +41,7 @@ export default function Signup() {
                 >
                   Email address{" "}
                   {actionResult?.errors?.email && (
-                    <span id="email-error" className="text-red-brand">
+                    <span id="email-error" className="text-brand-red">
                       {actionResult.errors.email}
                     </span>
                   )}
@@ -66,7 +66,7 @@ export default function Signup() {
                 >
                   Password{" "}
                   {actionResult?.errors?.password && (
-                    <span id="password-error" className="text-red-brand">
+                    <span id="password-error" className="text-brand-red">
                       {actionResult.errors.password}
                     </span>
                   )}
