@@ -32,8 +32,8 @@ model Board {
   color     String   @default("#e0e0e0")
   createdAt DateTime @default(now())
   columns   Column[]
-  Account   Account? @relation(fields: [accountId], references: [id])
-  accountId String?
+  Account   Account  @relation(fields: [accountId], references: [id])
+  accountId String
 }
 
 model Column {
@@ -41,8 +41,8 @@ model Column {
   name    String
   order   Float  @default(0)
   items   Item[]
-  Board   Board? @relation(fields: [boardId], references: [id])
-  boardId Int?
+  Board   Board  @relation(fields: [boardId], references: [id])
+  boardId Int
 }
 
 model Item {
@@ -55,6 +55,6 @@ model Item {
   // will be 1.75, etc.
   order Float
 
-  Column   Column? @relation(fields: [columnId], references: [id])
-  columnId Int?
+  Column   Column @relation(fields: [columnId], references: [id])
+  columnId Int
 }

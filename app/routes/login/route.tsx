@@ -1,4 +1,8 @@
-import { json, type ActionFunctionArgs, redirect } from "@remix-run/node";
+import {
+  json,
+  type ActionFunctionArgs,
+  redirect,
+} from "@remix-run/node";
 import { validate } from "./validate";
 import { Form, useActionData } from "@remix-run/react";
 import { login } from "./login";
@@ -18,7 +22,10 @@ export async function action({ request }: ActionFunctionArgs) {
   let userId = await login(email, password);
 
   if (userId === false) {
-    return json({ ok: false, errors: { message: "Invalid credentials" } }, 400);
+    return json(
+      { ok: false, errors: { message: "Invalid credentials" } },
+      400,
+    );
   }
 
   return setAuthOnResponse(redirect("/home"), userId);
@@ -59,7 +66,7 @@ export default function Signup() {
                     autoComplete="email"
                     aria-describedby="email-error"
                     required
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="px-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -71,7 +78,10 @@ export default function Signup() {
                 >
                   Password{" "}
                   {actionResult?.errors?.password && (
-                    <span id="password-error" className="text-brand-red">
+                    <span
+                      id="password-error"
+                      className="text-brand-red"
+                    >
                       {actionResult.errors.password}
                     </span>
                   )}
@@ -84,7 +94,7 @@ export default function Signup() {
                     autoComplete="current-password"
                     aria-describedby="password-error"
                     required
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="px-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -125,7 +135,7 @@ export default function Signup() {
                 </div>
                 <button
                   type="submit"
-                  className="flex w-full justify-center rounded-md bg-pink-brand px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  className="flex w-full justify-center rounded-md bg-brand-pink px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
                   Sign in
                 </button>

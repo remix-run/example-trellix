@@ -9,10 +9,16 @@ import { prisma } from "../../db/prisma";
 import { requireAuthCookie } from "../../auth/auth";
 import { badRequest, notFound } from "../../http/bad-response";
 
+////////////////////////////////////////////////////////////////////////////////
+// HTTP Handlers
+////////////////////////////////////////////////////////////////////////////////
+
 export const INTENTS = {
-  newColumn: "newColumn" as const,
+  createColumn: "newColumn" as const,
   updateColumn: "updateColumn" as const,
   createItem: "createItem" as const,
+  moveItem: "moveItem" as const,
+  moveColumn: "moveColumn" as const,
 };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -36,33 +42,65 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (!intent) throw badRequest("Missing intent");
 
   switch (intent) {
-    case INTENTS.newColumn: {
-      await createEmptyColumn(id);
+    case INTENTS.createColumn: {
+      let name = String(data.get("name"));
+      if (!name) throw badRequest("Missing name");
+      await createColumn(id, name);
       break;
     }
     case INTENTS.updateColumn: {
       let name = String(data.get("name"));
       let columnId = Number(data.get("columnId"));
-      if (!name || !columnId) throw badRequest("Missing name or columnId");
+      if (!name || !columnId)
+        throw badRequest("Missing name or columnId");
       await updateColumnName(columnId, name);
       break;
     }
     case INTENTS.createItem: {
       let title = String(data.get("title"));
       let columnId = Number(data.get("columnId"));
-      if (!title || !columnId) throw badRequest("Missing title or columnId");
+      if (!title || !columnId)
+        throw badRequest("Missing title or columnId");
       await createItem(columnId, title);
       break;
+    }
+    case INTENTS.moveItem: {
+      let order = Number(data.get("order"));
+      let cardId = Number(data.get("cardId"));
+      let columnId = Number(data.get("newColumnId"));
+      await moveItem(cardId, columnId, order);
     }
   }
 
   return request.headers.get("Sec-Fetch-Dest") === "document"
     ? redirect(`/board/${id}`)
-    : { ok: true };
+    : { ok: true, id };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Controller Functions
+////////////////////////////////////////////////////////////////////////////////
+
+async function moveItem(
+  cardId: number,
+  columnId: number,
+  order: number,
+) {
+  return prisma.item.update({
+    where: {
+      id: cardId,
+    },
+    data: {
+      columnId,
+      order,
+    },
+  });
 }
 
 export async function createItem(columnId: number, title: string) {
-  let itemCountForColumn = await prisma.item.count({ where: { columnId } });
+  let itemCountForColumn = await prisma.item.count({
+    where: { columnId },
+  });
   return prisma.item.create({
     data: {
       title,
@@ -79,16 +117,22 @@ export async function updateColumnName(id: number, name: string) {
   });
 }
 
-export async function createEmptyColumn(boardId: number) {
-  let columnCount = await prisma.column.count({ where: { boardId } });
+async function createColumn(boardId: number, name: string) {
+  let columnCount = await prisma.column.count({
+    where: { boardId },
+  });
   return prisma.column.create({
     data: {
-      name: "",
+      name,
       boardId,
       order: columnCount + 1,
     },
   });
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Public Functions
+////////////////////////////////////////////////////////////////////////////////
 
 export async function getBoardData(boardId: number) {
   return prisma.board.findUnique({

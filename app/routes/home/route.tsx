@@ -2,10 +2,18 @@ import {
   json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
+  redirect,
 } from "@remix-run/node";
 import { requireAuthCookie } from "~/auth/auth";
 import { getHomeData, createBoard } from "./query";
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useActionData,
+  useFetcher,
+  useLoaderData,
+  useNavigation,
+} from "@remix-run/react";
 import { useEffect, useRef } from "react";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -23,8 +31,8 @@ export async function action({ request }: ActionFunctionArgs) {
     return { ok: false, message: "Board name is required" };
   }
 
-  await createBoard(userId, name, color);
-  return { ok: true, message: "Board created" };
+  let board = await createBoard(userId, name, color);
+  throw redirect(`/board/${board.id}`);
 }
 
 export default function Projects() {
@@ -58,17 +66,11 @@ function Boards() {
 }
 
 function NewBoard() {
-  let fetcher = useFetcher<typeof action>();
-  let ref = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    if (fetcher.state === "idle" && fetcher.data?.ok) {
-      ref.current?.reset();
-    }
-  }, [fetcher]);
+  let actionData = useActionData<typeof action>();
+  let navigation = useNavigation();
 
   return (
-    <fetcher.Form method="post" ref={ref} className="p-8 max-w-md">
+    <Form method="post" className="p-8 max-w-md">
       <div>
         <h2 className="font-bold mb-2 text-xl">New Board</h2>
         <label
@@ -76,8 +78,8 @@ function NewBoard() {
           className="block text-sm font-medium leading-6 text-gray-900"
         >
           Name{" "}
-          {fetcher.data?.ok === false ? (
-            <span className="text-brand-red">{fetcher.data.message}</span>
+          {actionData?.ok === false ? (
+            <span className="text-brand-red">{actionData.message}</span>
           ) : null}
         </label>
         <div className="mt-2">
@@ -86,7 +88,7 @@ function NewBoard() {
             name="name"
             type="text"
             required
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            className="form-input block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
           />
         </div>
       </div>
@@ -109,11 +111,11 @@ function NewBoard() {
         </div>
         <button
           type="submit"
-          className="flex w-full justify-center rounded-md bg-blue-brand px-1 py-1 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          className="flex w-full justify-center rounded-md bg-brand-blue px-1 py-1 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          Create
+          {navigation.state !== "idle" ? "Creating..." : "Create"}
         </button>
       </div>
-    </fetcher.Form>
+    </Form>
   );
 }
