@@ -1,20 +1,17 @@
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   redirect,
 } from "@remix-run/node";
-import { requireAuthCookie } from "~/auth/auth";
+import { requireAuthCookie } from "../../auth/auth";
 import { getHomeData, createBoard } from "./query";
 import {
   Form,
   Link,
   useActionData,
-  useFetcher,
   useLoaderData,
   useNavigation,
 } from "@remix-run/react";
-import { useEffect, useRef } from "react";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   let userId = await requireAuthCookie(request);

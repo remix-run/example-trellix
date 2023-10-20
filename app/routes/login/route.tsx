@@ -6,7 +6,7 @@ import {
 import { validate } from "./validate";
 import { Form, useActionData } from "@remix-run/react";
 import { login } from "./login";
-import { setAuthOnResponse } from "~/auth/auth";
+import { setAuthOnResponse } from "../../auth/auth";
 
 export async function action({ request }: ActionFunctionArgs) {
   let formData = await request.formData();

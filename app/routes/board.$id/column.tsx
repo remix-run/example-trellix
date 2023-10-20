@@ -9,9 +9,9 @@ import {
 import { UNSAFE_DataRouterContext } from "react-router-dom";
 import { useFetcher } from "@remix-run/react";
 
-import { Icon } from "~/icons/icons";
+import { Icon } from "../../icons/icons";
 
-import { INTENTS } from "./controller";
+import { INTENTS } from "./INTENTS";
 import invariant from "tiny-invariant";
 import { NewCard } from "./new-card";
 import { flushSync } from "react-dom";

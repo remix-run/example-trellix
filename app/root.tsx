@@ -6,7 +6,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import stylesHref from "./styles.css";
+import stylesHref from "./styles.css?url";
 
 export default function App() {
   return (
@@ -39,8 +39,8 @@ export default function App() {
         </div>
 
         <ScrollRestoration />
-        <Scripts />
         <LiveReload />
+        <Scripts />
       </body>
     </html>
   );

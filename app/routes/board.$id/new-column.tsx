@@ -1,9 +1,10 @@
 import { useState, useRef, useLayoutEffect, useEffect } from "react";
 import { flushSync } from "react-dom";
 import invariant from "tiny-invariant";
-import { INTENTS, action } from "./controller";
+import { action } from "./controller.server";
+import { INTENTS } from "./INTENTS";
 import { useFetcher } from "@remix-run/react";
-import { Icon } from "~/icons/icons";
+import { Icon } from "../../icons/icons";
 import { Column } from "./column";
 
 export function NewColumn({

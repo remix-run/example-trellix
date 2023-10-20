@@ -1,5 +1,6 @@
 import { Link, useFetchers, useLoaderData } from "@remix-run/react";
-import { INTENTS, loader, action } from "./controller";
+import { loader, action } from "./controller.server";
+import { INTENTS } from "./INTENTS";
 import { Column } from "./column";
 import { Card } from "./card";
 import { NewColumn } from "./new-column";
@@ -7,12 +8,6 @@ import { useRef } from "react";
 import invariant from "tiny-invariant";
 
 export { loader, action };
-
-type OptimisticItem = {
-  order: number;
-  cardId: number;
-  columnId: number;
-};
 
 export default function Board() {
   let { board } = useLoaderData<typeof loader>();

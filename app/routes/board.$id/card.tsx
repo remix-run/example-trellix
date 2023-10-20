@@ -1,7 +1,7 @@
 import { useFetcher, useLocation } from "@remix-run/react";
 import { UNSAFE_DataRouterContext } from "react-router-dom";
 import { useState, useContext } from "react";
-import { INTENTS } from "./controller";
+import { INTENTS } from "./INTENTS";
 import invariant from "tiny-invariant";
 import { CONTENT_TYPES } from "./content-types";
 
@@ -55,10 +55,6 @@ export function Card({
     persist: true,
     key: `${INTENTS.moveItem}:${id}`,
   });
-
-  if (fetcher.state !== "idle") {
-    console.log(fetcher.state, id);
-  }
 
   return (
     <li

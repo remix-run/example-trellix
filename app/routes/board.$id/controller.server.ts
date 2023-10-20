@@ -8,18 +8,7 @@ import {
 import { prisma } from "../../db/prisma";
 import { requireAuthCookie } from "../../auth/auth";
 import { badRequest, notFound } from "../../http/bad-response";
-
-////////////////////////////////////////////////////////////////////////////////
-// HTTP Handlers
-////////////////////////////////////////////////////////////////////////////////
-
-export const INTENTS = {
-  createColumn: "newColumn" as const,
-  updateColumn: "updateColumn" as const,
-  createItem: "createItem" as const,
-  moveItem: "moveItem" as const,
-  moveColumn: "moveColumn" as const,
-};
+import { INTENTS } from "./INTENTS";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireAuthCookie(request);
