@@ -73,7 +73,6 @@ export function Column({
       }}
       onDrop={(event) => {
         if (disabled) return;
-        console.log("Column DROP");
 
         let { cardId, columnId: oldColumnId } = JSON.parse(
           event.dataTransfer.getData(CONTENT_TYPES.card),
@@ -85,8 +84,7 @@ export function Column({
         formData.set("intent", INTENTS.moveItem);
         formData.set("order", "1");
         formData.set("cardId", String(cardId));
-        formData.set("newColumnId", String(columnId));
-        formData.set("oldColumnId", String(oldColumnId));
+        formData.set("columnId", String(columnId));
 
         let fetcherKey = `${INTENTS.moveItem}:${cardId}`;
         router.fetch(

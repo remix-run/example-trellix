@@ -32,6 +32,7 @@ model Board {
   color     String   @default("#e0e0e0")
   createdAt DateTime @default(now())
   columns   Column[]
+  items     Item[]
   Account   Account  @relation(fields: [accountId], references: [id])
   accountId String
 }
@@ -57,4 +58,7 @@ model Item {
 
   Column   Column @relation(fields: [columnId], references: [id])
   columnId Int
+
+  Board   Board @relation(fields: [boardId], references: [id])
+  boardId Int
 }

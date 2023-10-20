@@ -12,7 +12,6 @@ type CardProps =
       content: string | null;
       id: number;
       columnId: number;
-      renderedColumnId: number;
       order: number;
       nextOrder: number;
       previousOrder: number;
@@ -28,7 +27,6 @@ type CardProps =
       columnId?: number;
       nextOrder?: number;
       previousOrder?: number;
-      renderedColumnId?: number;
     };
 
 export function Card({
@@ -40,7 +38,6 @@ export function Card({
   order,
   nextOrder,
   previousOrder,
-  renderedColumnId,
 }: CardProps) {
   let ctxt = useContext(UNSAFE_DataRouterContext);
   invariant(ctxt);
@@ -50,11 +47,6 @@ export function Card({
   let [acceptDrop, setAcceptDrop] = useState<"none" | "top" | "bottom">(
     "none",
   );
-  // let fetcher = useFetcher({ key: `card:${id}` });
-  let fetcher = useFetcher({
-    persist: true,
-    key: `${INTENTS.moveItem}:${id}`,
-  });
 
   return (
     <li
@@ -74,7 +66,6 @@ export function Card({
       }}
       onDrop={(event) => {
         if (disabled) return;
-        console.log("DROPPED!");
         event.stopPropagation();
 
         let { cardId, columnId: oldColumnId } = JSON.parse(
@@ -91,15 +82,14 @@ export function Card({
         formData.set("intent", INTENTS.moveItem);
         formData.set("order", String(newOrder));
         formData.set("cardId", String(cardId));
-        formData.set("newColumnId", String(renderedColumnId));
-        formData.set("oldColumnId", String(oldColumnId));
+        formData.set("columnId", String(columnId));
 
         let fetcherKey = `${INTENTS.moveItem}:${cardId}`;
         router.fetch(
           fetcherKey,
           "routes/board.$id",
           location.pathname,
-          { formMethod: "post", formData, persist: true },
+          { formMethod: "post", formData /*persist: true*/ },
         );
 
         setAcceptDrop("none");

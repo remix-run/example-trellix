@@ -23,8 +23,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  let id = Number(params.id);
-  invariant(id, "Missing board ID");
+  let boardId = Number(params.id);
+  invariant(boardId, "Missing boardId");
 
   let data = await request.formData();
   let intent = String(data.get("intent"));
@@ -34,7 +34,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case INTENTS.createColumn: {
       let name = String(data.get("name"));
       if (!name) throw badRequest("Missing name");
-      await createColumn(id, name);
+      await createColumn(boardId, name);
       break;
     }
     case INTENTS.updateColumn: {
@@ -50,20 +50,24 @@ export async function action({ request, params }: ActionFunctionArgs) {
       let columnId = Number(data.get("columnId"));
       if (!title || !columnId)
         throw badRequest("Missing title or columnId");
-      await createItem(columnId, title);
+      await createItem(boardId, columnId, title);
       break;
     }
     case INTENTS.moveItem: {
       let order = Number(data.get("order"));
       let cardId = Number(data.get("cardId"));
-      let columnId = Number(data.get("newColumnId"));
+      let columnId = Number(data.get("columnId"));
       await moveItem(cardId, columnId, order);
+      break;
+    }
+    default: {
+      throw new Error("Unknown intent");
     }
   }
 
   return request.headers.get("Sec-Fetch-Dest") === "document"
-    ? redirect(`/board/${id}`)
-    : { ok: true, id };
+    ? redirect(`/board/${boardId}`)
+    : { ok: true, boardId };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -86,7 +90,11 @@ async function moveItem(
   });
 }
 
-export async function createItem(columnId: number, title: string) {
+export async function createItem(
+  boardId: number,
+  columnId: number,
+  title: string,
+) {
   let itemCountForColumn = await prisma.item.count({
     where: { columnId },
   });
@@ -94,6 +102,7 @@ export async function createItem(columnId: number, title: string) {
     data: {
       title,
       columnId,
+      boardId,
       order: itemCountForColumn + 1,
     },
   });
@@ -129,14 +138,8 @@ export async function getBoardData(boardId: number) {
       id: boardId,
     },
     include: {
+      items: true,
       columns: {
-        include: {
-          items: {
-            orderBy: {
-              order: "asc",
-            },
-          },
-        },
         orderBy: {
           order: "asc",
         },

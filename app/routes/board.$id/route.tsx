@@ -10,69 +10,51 @@ import invariant from "tiny-invariant";
 
 export { loader, action };
 
+type FetcherWithFormData = ReturnType<typeof useFetchers>[0] & {
+  formData: FormData;
+};
+
 export default function Board() {
   let { board } = useLoaderData<typeof loader>();
-  let fetchers = useFetchers();
-  console.log(
-    "fetchers",
-    fetchers.map((f) => `${f.state}:${f.formData?.get("cardId")}`),
-  );
 
-  console.group();
-  console.log(
-    "board\t\t",
-    board.columns.map((col) => col.items.length).join(" | "),
-  );
-  let colMap = new Map(
-    board.columns.map((col) => [
-      col.id,
-      {
-        ...col,
-        // copy items cause we'll mutate them for optimistic UI
-        items: [...col.items],
-      },
-    ]),
-  );
-  console.log(
-    "map\t\t\t",
-    [...colMap.values()].map((col) => col.items.length).join(" | "),
-  );
-
-  for (let fetcher of fetchers) {
-    if (fetcher.formData?.get("intent") === INTENTS.moveItem) {
-      // get the formData going over the network
-      let newColumnId = Number(fetcher.formData.get("newColumnId"));
-      let oldColumnId = Number(fetcher.formData.get("oldColumnId"));
+  let movingFetchers = useFetchers()
+    .filter((fetcher): fetcher is FetcherWithFormData => {
+      return fetcher.formData?.get("intent") === INTENTS.moveItem;
+    })
+    .reduce((map, fetcher) => {
+      // TODO: use a json fetcher
       let cardId = Number(fetcher.formData.get("cardId"));
+      let columnId = Number(fetcher.formData.get("columnId"));
       let order = Number(fetcher.formData.get("order"));
-      invariant(newColumnId, "missing newColumnId");
-      invariant(oldColumnId, "missing newColumnId");
-      invariant(cardId, "missing cardId");
-      invariant(order, "missing order");
+      invariant(cardId, "missing cardId in formData");
+      invariant(columnId, "missing columnId in formData");
+      return map.set(Number(cardId), {
+        columnId: Number(columnId),
+        order: Number(order),
+      });
+    }, new Map<number, { columnId: number; order: number }>());
 
-      // get the two columns
-      let oldCol = colMap.get(oldColumnId);
-      invariant(oldCol, "missing old column");
-      let newCol = colMap.get(newColumnId);
-      invariant(newCol, "missing new column");
+  type ColumnWithItems = (typeof board.columns)[0] & {
+    items: typeof board.items;
+  };
 
-      // remove the item from the old column
-      let actualIndex = oldCol.items.findIndex(
-        (item) => item.id === cardId,
-      );
-      invariant(actualIndex > -1, "missing item in old column");
-      let [actualItem] = oldCol.items.splice(actualIndex, 1);
-
-      // push it to the new one with the new order
-      newCol.items.push({ ...actualItem, order });
-    }
-  }
-
-  console.log(
-    "map after\t",
-    [...colMap.values()].map((col) => col.items.length).join(" | "),
+  // copy the columns so we can add items to them, including optimistic items
+  let columns = board.columns.reduce(
+    (map, column) => map.set(column.id, { ...column, items: [] }),
+    new Map<number, ColumnWithItems>(),
   );
-  console.groupEnd();
+
+  // add items to their columns
+  for (let item of board.items) {
+    // check optimistic versions first
+    let movingItem = movingFetchers.get(item.id);
+    let columnId = movingItem ? movingItem.columnId : item.columnId;
+    let column = columns.get(columnId);
+    invariant(column, "missing column");
+    column.items.push(
+      movingItem ? { ...item, order: movingItem.order } : item,
+    );
+  }
 
   let scrollContainerRef = useRef<HTMLDivElement>(null);
   function scrollRight() {
@@ -90,7 +72,7 @@ export default function Board() {
       <h1 className="px-8 my-4 text-2xl font-medium">{board.name}</h1>
 
       <div className="flex flex-grow min-h-0 h-full items-start gap-4 px-8 pb-4">
-        {[...colMap.values()].map((col) => {
+        {[...columns.values()].map((col) => {
           return (
             <Column key={col.id} name={col.name} columnId={col.id}>
               {col.items
@@ -105,8 +87,7 @@ export default function Board() {
                     // important to pass the item's column ID, because when it's
                     // optimistic it can be a different column than the one it's
                     // rendered in
-                    columnId={item.columnId}
-                    renderedColumnId={col.id}
+                    columnId={col.id}
                     previousOrder={
                       items[index - 1] ? items[index - 1].order : 0
                     }

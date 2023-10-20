@@ -1,4 +1,8 @@
-import { json, type ActionFunctionArgs, redirect } from "@remix-run/node";
+import {
+  json,
+  type ActionFunctionArgs,
+  redirect,
+} from "@remix-run/node";
 import { validate } from "./validate";
 import { Form, useActionData } from "@remix-run/react";
 import { createAccount } from "./create-account";
@@ -20,7 +24,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function Signup() {
   let actionResult = useActionData<typeof action>();
-  console.log(actionResult);
 
   return (
     <>
@@ -66,7 +69,10 @@ export default function Signup() {
                 >
                   Password{" "}
                   {actionResult?.errors?.password && (
-                    <span id="password-error" className="text-brand-red">
+                    <span
+                      id="password-error"
+                      className="text-brand-red"
+                    >
                       {actionResult.errors.password}
                     </span>
                   )}
