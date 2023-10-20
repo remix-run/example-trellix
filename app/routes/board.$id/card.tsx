@@ -3,7 +3,7 @@ import { UNSAFE_DataRouterContext } from "react-router-dom";
 import { useState, useContext } from "react";
 import { INTENTS } from "./INTENTS";
 import invariant from "tiny-invariant";
-import { CONTENT_TYPES } from "./content-types";
+import { CONTENT_TYPES } from "./CONTENT_TYPES";
 
 type CardProps =
   | {

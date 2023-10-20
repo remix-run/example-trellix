@@ -1,5 +1,6 @@
 import { Link, useFetchers, useLoaderData } from "@remix-run/react";
-import { loader, action } from "./controller.server";
+import { action } from "./server";
+import { loader } from "./server";
 import { INTENTS } from "./INTENTS";
 import { Column } from "./column";
 import { Card } from "./card";

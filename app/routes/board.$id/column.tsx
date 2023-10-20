@@ -15,7 +15,7 @@ import { INTENTS } from "./INTENTS";
 import invariant from "tiny-invariant";
 import { NewCard } from "./new-card";
 import { flushSync } from "react-dom";
-import { CONTENT_TYPES } from "./content-types";
+import { CONTENT_TYPES } from "./CONTENT_TYPES";
 
 type ColumnProps =
   | {

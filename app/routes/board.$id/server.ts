@@ -2,13 +2,13 @@ import invariant from "tiny-invariant";
 import {
   redirect,
   type ActionFunctionArgs,
-  type LoaderFunctionArgs,
+  LoaderFunctionArgs,
 } from "@remix-run/node";
 
 import { prisma } from "../../db/prisma";
-import { requireAuthCookie } from "../../auth/auth";
 import { badRequest, notFound } from "../../http/bad-response";
 import { INTENTS } from "./INTENTS";
+import { requireAuthCookie } from "../../auth/auth";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireAuthCookie(request);

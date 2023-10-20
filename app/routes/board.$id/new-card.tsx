@@ -1,7 +1,7 @@
 import { useState, useRef, useLayoutEffect, useEffect } from "react";
 import { flushSync } from "react-dom";
 import invariant from "tiny-invariant";
-import { action } from "./controller.server";
+import { action } from "./server";
 import { INTENTS } from "./INTENTS";
 import { Card } from "./card";
 import { useFetcher } from "@remix-run/react";
