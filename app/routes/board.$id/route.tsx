@@ -35,6 +35,15 @@ export default function Board() {
     column.items.push(movingItem ? { ...item, order: movingItem.order } : item);
   }
 
+  // We scroll right when a new column edit starts (onAdd from <NewColumn/>) or
+  // a new optimistic column shows up (should be `onSubmit` from `<NewColumn>`
+  // but instead we have this), for some reason flushSync doesn't work with
+  // `submit()` inside of `<NewColumn />` so we can't control the scroll timing
+  // and need to do this weird hack instead, it'll scroll incorrectly in some
+  // network conditions when items fall out of the array, not worried about
+  // that, the real solution is to get `flushSync() => { submit(); onAdd(); }`
+  // to work in other words, this is a huge hack to know we just submitted the
+  // form and rendered a new optimistic column
   let [addScrollKey, setAddScrollKey] = useState<number | null>(null);
   if (addingColumns.length > 0) {
     let last = addingColumns[addingColumns.length - 1].id;
