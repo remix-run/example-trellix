@@ -22,7 +22,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
   let boardId = Number(params.id);
   invariant(boardId, "Missing boardId");
 
-  let { intent, ...data } = await request.json();
+  let { intent, ...data } =
+    request.headers.get("Content-Type") === "application/json"
+      ? await request.json()
+      : Object.fromEntries(await request.formData());
+
   if (!intent) throw badRequest("Missing intent");
 
   switch (intent) {
