@@ -1,9 +1,5 @@
 import invariant from "tiny-invariant";
-import {
-  redirect,
-  type ActionFunctionArgs,
-  LoaderFunctionArgs,
-} from "@remix-run/node";
+import { redirect, type ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 
 import { prisma } from "../../db/prisma";
 import { badRequest, notFound } from "../../http/bad-response";
@@ -26,37 +22,30 @@ export async function action({ request, params }: ActionFunctionArgs) {
   let boardId = Number(params.id);
   invariant(boardId, "Missing boardId");
 
-  let data = await request.formData();
-  let intent = String(data.get("intent"));
+  let { intent, ...data } = await request.json();
   if (!intent) throw badRequest("Missing intent");
 
   switch (intent) {
     case INTENTS.createColumn: {
-      let name = String(data.get("name"));
+      let name = data.name;
       if (!name) throw badRequest("Missing name");
       await createColumn(boardId, name);
       break;
     }
     case INTENTS.updateColumn: {
-      let name = String(data.get("name"));
-      let columnId = Number(data.get("columnId"));
-      if (!name || !columnId)
-        throw badRequest("Missing name or columnId");
+      let { name, columnId } = data;
+      if (!name || !columnId) throw badRequest("Missing name or columnId");
       await updateColumnName(columnId, name);
       break;
     }
     case INTENTS.createItem: {
-      let title = String(data.get("title"));
-      let columnId = Number(data.get("columnId"));
-      if (!title || !columnId)
-        throw badRequest("Missing title or columnId");
+      let { title, columnId } = data;
+      if (!title || !columnId) throw badRequest("Missing title or columnId");
       await createItem(boardId, columnId, title);
       break;
     }
     case INTENTS.moveItem: {
-      let order = Number(data.get("order"));
-      let cardId = Number(data.get("cardId"));
-      let columnId = Number(data.get("columnId"));
+      let { order, cardId, columnId } = data;
       await moveItem(cardId, columnId, order);
       break;
     }
@@ -65,20 +54,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
   }
 
-  return request.headers.get("Sec-Fetch-Dest") === "document"
-    ? redirect(`/board/${boardId}`)
-    : { ok: true, boardId };
+  return request.headers.get("Sec-Fetch-Dest") === "document" ? redirect(`/board/${boardId}`) : { ok: true, boardId };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Controller Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-async function moveItem(
-  cardId: number,
-  columnId: number,
-  order: number,
-) {
+async function moveItem(cardId: number, columnId: number, order: number) {
   return prisma.item.update({
     where: {
       id: cardId,
@@ -90,11 +73,7 @@ async function moveItem(
   });
 }
 
-export async function createItem(
-  boardId: number,
-  columnId: number,
-  title: string,
-) {
+export async function createItem(boardId: number, columnId: number, title: string) {
   let itemCountForColumn = await prisma.item.count({
     where: { columnId },
   });

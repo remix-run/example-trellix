@@ -21,11 +21,7 @@ export function NewColumn({
   return (
     <>
       {edit ? (
-        <EditNewColumn
-          boardId={boardId}
-          onComplete={() => setEdit(false)}
-          onAdd={onAdd}
-        />
+        <EditNewColumn boardId={boardId} onComplete={() => setEdit(false)} onAdd={onAdd} />
       ) : (
         <button
           onClick={() => {
@@ -44,15 +40,7 @@ export function NewColumn({
   );
 }
 
-function EditNewColumn({
-  boardId,
-  onComplete,
-  onAdd,
-}: {
-  boardId: number;
-  onComplete: () => void;
-  onAdd: () => void;
-}) {
+function EditNewColumn({ boardId, onComplete, onAdd }: { boardId: number; onComplete: () => void; onAdd: () => void }) {
   let [pendingColumns, setPendingColumns] = useState<FormData[]>([]);
   let formRef = useRef<HTMLFormElement>(null);
   let inputRef = useRef<HTMLInputElement>(null);
@@ -75,9 +63,7 @@ function EditNewColumn({
           key={index}
           formData={formData}
           onComplete={() => {
-            setPendingColumns(
-              pendingColumns.filter((f) => f !== formData),
-            );
+            setPendingColumns(pendingColumns.filter((f) => f !== formData));
           }}
         />
       ))}
@@ -95,11 +81,7 @@ function EditNewColumn({
           }
         }}
       >
-        <input
-          type="hidden"
-          name="intent"
-          value={INTENTS.createColumn}
-        />
+        <input type="hidden" name="intent" value={INTENTS.createColumn} />
         <input type="hidden" name="boardId" value={boardId} />
         <input
           autoFocus
@@ -109,10 +91,7 @@ function EditNewColumn({
           className="border border-stone-400 w-full rounded-lg py-1 px-2 font-medium text-black"
         />
         <div className="flex justify-between">
-          <button
-            type="submit"
-            className="text-sm rounded-lg text-left p-2 font-medium text-white bg-brand-blue"
-          >
+          <button type="submit" className="text-sm rounded-lg text-left p-2 font-medium text-white bg-brand-blue">
             Save Column
           </button>
           <button
@@ -128,13 +107,7 @@ function EditNewColumn({
   );
 }
 
-function PendingNewColumn({
-  formData,
-  onComplete,
-}: {
-  formData: FormData;
-  onComplete: () => void;
-}) {
+function PendingNewColumn({ formData, onComplete }: { formData: FormData; onComplete: () => void }) {
   let fetcher = useFetcher<typeof action>();
   let name = String(formData.get("name"));
 

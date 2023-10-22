@@ -1,4 +1,4 @@
-import { useFetcher, useLocation } from "@remix-run/react";
+import { useSubmit, useLocation } from "@remix-run/react";
 import { UNSAFE_DataRouterContext } from "react-router-dom";
 import { useState, useContext } from "react";
 import { INTENTS } from "./INTENTS";
@@ -29,24 +29,10 @@ type CardProps =
       previousOrder?: number;
     };
 
-export function Card({
-  title,
-  content,
-  id,
-  disabled,
-  columnId,
-  order,
-  nextOrder,
-  previousOrder,
-}: CardProps) {
-  let ctxt = useContext(UNSAFE_DataRouterContext);
-  invariant(ctxt);
-  let { router } = ctxt;
-  let location = useLocation();
+export function Card({ title, content, id, disabled, columnId, order, nextOrder, previousOrder }: CardProps) {
+  let submit = useSubmit();
 
-  let [acceptDrop, setAcceptDrop] = useState<"none" | "top" | "bottom">(
-    "none",
-  );
+  let [acceptDrop, setAcceptDrop] = useState<"none" | "top" | "bottom">("none");
 
   return (
     <li
@@ -68,29 +54,25 @@ export function Card({
         if (disabled) return;
         event.stopPropagation();
 
-        let { cardId, columnId: oldColumnId } = JSON.parse(
-          event.dataTransfer.getData(CONTENT_TYPES.card),
-        );
+        let cardId = JSON.parse(event.dataTransfer.getData(CONTENT_TYPES.card));
         invariant(typeof cardId === "number", "missing cardId");
-        invariant(typeof oldColumnId === "number", "missing columnId");
 
-        let siblingOrder =
-          acceptDrop === "top" ? previousOrder : nextOrder;
-        let newOrder = (siblingOrder + order) / 2;
+        let droppedOrder = acceptDrop === "top" ? previousOrder : nextOrder;
+        let moveOrder = (droppedOrder + order) / 2;
 
-        let formData = new FormData();
-        formData.set("intent", INTENTS.moveItem);
-        formData.set("order", String(newOrder));
-        formData.set("cardId", String(cardId));
-        formData.set("columnId", String(columnId));
+        let json = {
+          intent: INTENTS.moveItem,
+          order: moveOrder,
+          cardId: cardId,
+          columnId: columnId,
+        };
 
-        let fetcherKey = `${INTENTS.moveItem}:${cardId}`;
-        router.fetch(
-          fetcherKey,
-          "routes/board.$id",
-          location.pathname,
-          { formMethod: "post", formData /*persist: true*/ },
-        );
+        submit(json, {
+          method: "post",
+          encType: "application/json",
+          navigate: false,
+          fetcherKey: `${INTENTS.moveItem}:${cardId}`,
+        });
 
         setAcceptDrop("none");
       }}
@@ -109,10 +91,7 @@ export function Card({
         onDragStart={(event) => {
           if (disabled) return;
           event.dataTransfer.effectAllowed = "move";
-          event.dataTransfer.setData(
-            CONTENT_TYPES.card,
-            JSON.stringify({ cardId: id, columnId }),
-          );
+          event.dataTransfer.setData(CONTENT_TYPES.card, String(id));
         }}
       >
         <h3>{title}</h3>

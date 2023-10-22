@@ -10,29 +10,10 @@ import invariant from "tiny-invariant";
 
 export { loader, action };
 
-type FetcherWithFormData = ReturnType<typeof useFetchers>[0] & {
-  formData: FormData;
-};
-
 export default function Board() {
   let { board } = useLoaderData<typeof loader>();
 
-  let movingFetchers = useFetchers()
-    .filter((fetcher): fetcher is FetcherWithFormData => {
-      return fetcher.formData?.get("intent") === INTENTS.moveItem;
-    })
-    .reduce((map, fetcher) => {
-      // TODO: use a json fetcher
-      let cardId = Number(fetcher.formData.get("cardId"));
-      let columnId = Number(fetcher.formData.get("columnId"));
-      let order = Number(fetcher.formData.get("order"));
-      invariant(cardId, "missing cardId in formData");
-      invariant(columnId, "missing columnId in formData");
-      return map.set(Number(cardId), {
-        columnId: Number(columnId),
-        order: Number(order),
-      });
-    }, new Map<number, { columnId: number; order: number }>());
+  let movingFetchers = useMovingFetchers();
 
   type ColumnWithItems = (typeof board.columns)[0] & {
     items: typeof board.items;
@@ -51,16 +32,13 @@ export default function Board() {
     let columnId = movingItem ? movingItem.columnId : item.columnId;
     let column = columns.get(columnId);
     invariant(column, "missing column");
-    column.items.push(
-      movingItem ? { ...item, order: movingItem.order } : item,
-    );
+    column.items.push(movingItem ? { ...item, order: movingItem.order } : item);
   }
 
   let scrollContainerRef = useRef<HTMLDivElement>(null);
   function scrollRight() {
     invariant(scrollContainerRef.current);
-    scrollContainerRef.current.scrollLeft =
-      scrollContainerRef.current.scrollWidth;
+    scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
   }
 
   return (
@@ -84,34 +62,37 @@ export default function Board() {
                     content={item.content}
                     id={item.id}
                     order={item.order}
-                    // important to pass the item's column ID, because when it's
-                    // optimistic it can be a different column than the one it's
-                    // rendered in
                     columnId={col.id}
-                    previousOrder={
-                      items[index - 1] ? items[index - 1].order : 0
-                    }
-                    nextOrder={
-                      items[index + 1]
-                        ? items[index + 1].order
-                        : item.order + 1
-                    }
+                    previousOrder={items[index - 1] ? items[index - 1].order : 0}
+                    nextOrder={items[index + 1] ? items[index + 1].order : item.order + 1}
                   />
                 ))}
             </Column>
           );
         })}
 
-        <NewColumn
-          boardId={board.id}
-          onAdd={scrollRight}
-          editInitially={board.columns.length === 0}
-        />
+        <NewColumn boardId={board.id} onAdd={scrollRight} editInitially={board.columns.length === 0} />
 
         <div data-lol-shutup className="w-8 h-1 flex-shrink-0" />
       </div>
     </div>
   );
+}
+
+function useMovingFetchers() {
+  type MovingFetcher = ReturnType<typeof useFetchers>[0] & {
+    json: { cardId: number; columnId: number; order: number };
+  };
+
+  return useFetchers()
+    .filter((fetcher): fetcher is MovingFetcher => {
+      let json = fetcher.json as unknown as any;
+      return json && json.intent === INTENTS.moveItem;
+    })
+    .reduce((map, fetcher) => {
+      let { cardId, columnId, order } = fetcher.json;
+      return map.set(cardId, { columnId, order });
+    }, new Map<number, { columnId: number; order: number }>());
 }
 
 export function ErrorBoundary() {

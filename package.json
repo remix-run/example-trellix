@@ -38,6 +38,6 @@
     "node": ">=18.0.0"
   },
   "prettier": {
-    "printWidth": 72
+    "printWidth": 120
   }
 }
