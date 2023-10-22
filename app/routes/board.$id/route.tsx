@@ -5,7 +5,7 @@ import { INTENTS } from "./INTENTS";
 import { Column } from "./column";
 import { Card } from "./card";
 import { NewColumn } from "./new-column";
-import { useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import invariant from "tiny-invariant";
 
 export { loader, action };
@@ -13,14 +13,14 @@ export { loader, action };
 export default function Board() {
   let { board } = useLoaderData<typeof loader>();
 
-  let movingFetchers = useMovingFetchers();
+  let movingFetchers = useMovingCards();
+  let addingColumns = useAddingColumns();
 
-  type ColumnWithItems = (typeof board.columns)[0] & {
-    items: typeof board.items;
-  };
+  type Column = (typeof board.columns)[0] | (typeof addingColumns)[0];
+  type ColumnWithItems = Column & { items: typeof board.items };
 
   // copy the columns so we can add items to them, including optimistic items
-  let columns = board.columns.reduce(
+  let columns = [...board.columns, ...addingColumns].reduce(
     (map, column) => map.set(column.id, { ...column, items: [] }),
     new Map<number, ColumnWithItems>(),
   );
@@ -33,6 +33,15 @@ export default function Board() {
     let column = columns.get(columnId);
     invariant(column, "missing column");
     column.items.push(movingItem ? { ...item, order: movingItem.order } : item);
+  }
+
+  let [addScrollKey, setAddScrollKey] = useState<number | null>(null);
+  if (addingColumns.length > 0) {
+    let last = addingColumns[addingColumns.length - 1].id;
+    if (last !== addScrollKey) setAddScrollKey(last);
+  }
+  if (typeof window !== "undefined") {
+    useLayoutEffect(scrollRight, [addScrollKey]);
   }
 
   let scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -79,7 +88,21 @@ export default function Board() {
   );
 }
 
-function useMovingFetchers() {
+function useAddingColumns() {
+  type CreateColumnFetcher = ReturnType<typeof useFetchers>[0] & { formData: FormData };
+
+  return useFetchers()
+    .filter((fetcher): fetcher is CreateColumnFetcher => {
+      return fetcher.formData?.get("intent") === INTENTS.createColumn;
+    })
+    .map((fetcher) => {
+      let name = String(fetcher.formData.get("name"));
+      let TODO_useClientIds = Number(fetcher.formData.get("clientId"));
+      return { name, id: TODO_useClientIds };
+    }, Array<{ name: string; id: number }>());
+}
+
+function useMovingCards() {
   type MovingFetcher = ReturnType<typeof useFetchers>[0] & {
     json: { cardId: number; columnId: number; order: number };
   };
