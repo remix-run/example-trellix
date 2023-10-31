@@ -38,18 +38,20 @@ model Board {
 }
 
 model Column {
-  id      Int    @id @default(autoincrement())
-  name    String
-  order   Float  @default(0)
-  items   Item[]
-  Board   Board  @relation(fields: [boardId], references: [id])
-  boardId Int
+  id       Int    @id @default(autoincrement())
+  clientId String @unique @default(uuid())
+  name     String
+  order    Float  @default(0)
+  items    Item[]
+  Board    Board  @relation(fields: [boardId], references: [id])
+  boardId  Int
 }
 
 model Item {
-  id      Int     @id @default(autoincrement())
-  title   String
-  content String?
+  id       Int     @id @default(autoincrement())
+  clientId String  @unique @default(uuid())
+  title    String
+  content  String?
 
   // we split the difference between the prev/next items. If an item is dropped
   // between 1.00 and 2.00 it will be 1.50. If dropped between 1.50 and 2.00 it

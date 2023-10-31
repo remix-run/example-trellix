@@ -1,35 +1,20 @@
-import { useSubmit, useLocation } from "@remix-run/react";
-import { UNSAFE_DataRouterContext } from "react-router-dom";
-import { useState, useContext } from "react";
+import { useSubmit } from "@remix-run/react";
+import { useState } from "react";
 import { INTENTS } from "./INTENTS";
 import invariant from "tiny-invariant";
 import { CONTENT_TYPES } from "./CONTENT_TYPES";
 
-type CardProps =
-  | {
-      disabled?: undefined;
-      title: string;
-      content: string | null;
-      id: number;
-      columnId: number;
-      order: number;
-      nextOrder: number;
-      previousOrder: number;
-    }
-  | {
-      // TODO: stop doing disabled, use client ids and make
-      // the whole thing work even when the network is dog slow
-      disabled: true;
-      content?: string;
-      title?: string;
-      id?: number;
-      order?: number;
-      columnId?: number;
-      nextOrder?: number;
-      previousOrder?: number;
-    };
+interface CardProps {
+  title: string;
+  content: string | null;
+  id: number;
+  columnId: number;
+  order: number;
+  nextOrder: number;
+  previousOrder: number;
+}
 
-export function Card({ title, content, id, disabled, columnId, order, nextOrder, previousOrder }: CardProps) {
+export function Card({ title, content, id, columnId, order, nextOrder, previousOrder }: CardProps) {
   let submit = useSubmit();
 
   let [acceptDrop, setAcceptDrop] = useState<"none" | "top" | "bottom">("none");
@@ -37,7 +22,6 @@ export function Card({ title, content, id, disabled, columnId, order, nextOrder,
   return (
     <li
       onDragOver={(event) => {
-        if (disabled) return;
         if (event.dataTransfer.types.includes(CONTENT_TYPES.card)) {
           event.preventDefault();
           event.stopPropagation();
@@ -47,11 +31,9 @@ export function Card({ title, content, id, disabled, columnId, order, nextOrder,
         }
       }}
       onDragLeave={() => {
-        if (disabled) return;
         setAcceptDrop("none");
       }}
       onDrop={(event) => {
-        if (disabled) return;
         event.stopPropagation();
 
         let cardId = JSON.parse(event.dataTransfer.getData(CONTENT_TYPES.card));
@@ -89,7 +71,6 @@ export function Card({ title, content, id, disabled, columnId, order, nextOrder,
         className="bg-white shadow text-sm rounded-lg w-full py-1 px-2"
         draggable
         onDragStart={(event) => {
-          if (disabled) return;
           event.dataTransfer.effectAllowed = "move";
           event.dataTransfer.setData(CONTENT_TYPES.card, String(id));
         }}

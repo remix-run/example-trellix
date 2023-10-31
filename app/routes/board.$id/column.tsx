@@ -1,13 +1,5 @@
-import {
-  useState,
-  type ReactNode,
-  useEffect,
-  useRef,
-  useContext,
-  Children,
-} from "react";
-import { UNSAFE_DataRouterContext } from "react-router-dom";
-import { useFetcher } from "@remix-run/react";
+import { useState, type ReactNode, useEffect, useRef, Children } from "react";
+import { useFetcher, useFetchers, useSubmit } from "@remix-run/react";
 
 import { Icon } from "../../icons/icons";
 
@@ -16,54 +8,44 @@ import invariant from "tiny-invariant";
 import { NewCard } from "./new-card";
 import { flushSync } from "react-dom";
 import { CONTENT_TYPES } from "./CONTENT_TYPES";
+import { Card } from "./card";
 
-type ColumnProps =
-  | {
-      disabled?: undefined;
-      children: ReactNode;
-      name: string;
-      columnId: number;
-    }
-  | {
-      disabled: true;
-      children?: undefined;
-      name: string;
-      columnId?: undefined;
-    };
+interface Item {
+  id: number;
+  title: string;
+  order: number;
+  content: string | null;
+}
 
-export function Column({
-  children,
-  name,
-  columnId,
-  disabled,
-}: ColumnProps) {
-  let ctxt = useContext(UNSAFE_DataRouterContext);
-  invariant(ctxt);
-  let { router } = ctxt;
+interface ColumnProps {
+  name: string;
+  columnId: number;
+  items: Item[];
+}
+
+export function Column({ name, columnId, items }: ColumnProps) {
+  let submit = useSubmit();
 
   let [acceptDrop, setAcceptDrop] = useState(false);
   let [edit, setEdit] = useState(false);
   let listRef = useRef<HTMLUListElement>(null);
+  let addingItems = useAddingCards(columnId);
 
   function scrollList() {
     invariant(listRef.current);
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }
 
-  let isEmpty = Children.count(children) === 0;
+  let isEmpty = items.length === 0;
 
   return (
     <div
       className={
-        `flex-shrink-0 flex flex-col overflow-hidden max-h-full w-80 border rounded-xl shadow bg-stone-100 ` +
+        "flex-shrink-0 flex flex-col overflow-hidden max-h-full w-80 border rounded-xl shadow bg-stone-100 " +
         (acceptDrop ? `outline outline-2 outline-brand-red` : ``)
       }
       onDragOver={(event) => {
-        if (disabled) return;
-        if (
-          isEmpty &&
-          event.dataTransfer.types.includes(CONTENT_TYPES.card)
-        ) {
+        if (isEmpty && event.dataTransfer.types.includes(CONTENT_TYPES.card)) {
           event.preventDefault();
           setAcceptDrop(true);
         }
@@ -72,43 +54,48 @@ export function Column({
         setAcceptDrop(false);
       }}
       onDrop={(event) => {
-        if (disabled) return;
-
-        let { cardId, columnId: oldColumnId } = JSON.parse(
-          event.dataTransfer.getData(CONTENT_TYPES.card),
-        );
+        let cardId = Number(event.dataTransfer.getData(CONTENT_TYPES.card));
         invariant(typeof cardId === "number", "missing cardId");
-        invariant(typeof oldColumnId === "number", "missing columnId");
 
-        let formData = new FormData();
-        formData.set("intent", INTENTS.moveItem);
-        formData.set("order", "1");
-        formData.set("cardId", String(cardId));
-        formData.set("columnId", String(columnId));
-
-        let fetcherKey = `${INTENTS.moveItem}:${cardId}`;
-        router.fetch(
-          fetcherKey,
-          "routes/board.$id",
-          location.pathname,
-          { formMethod: "post", formData, persist: true },
-        );
+        let data = {
+          intent: INTENTS.moveItem,
+          order: 1,
+          cardId: cardId,
+          columnId: columnId,
+        };
+        submit(data, {
+          method: "post",
+          navigate: false,
+          fetcherKey: `${INTENTS.moveItem}:${cardId}`,
+          encType: "application/json",
+        });
 
         setAcceptDrop(false);
       }}
     >
-      {disabled ? (
-        <ColumnHeader disabled name={name} />
-      ) : (
-        <ColumnHeader name={name} columnId={columnId} />
-      )}
+      <ColumnHeader name={name} columnId={columnId} />
 
       <ul ref={listRef} className="flex-grow overflow-auto">
-        {children}
+        {items
+          .concat(addingItems)
+          .sort((a, b) => a.order - b.order)
+          .map((item, index, items) => (
+            <Card
+              key={item.id}
+              title={item.title}
+              content={item.content}
+              id={item.id}
+              order={item.order}
+              columnId={columnId}
+              previousOrder={items[index - 1] ? items[index - 1].order : 0}
+              nextOrder={items[index + 1] ? items[index + 1].order : item.order + 1}
+            />
+          ))}
 
-        {!disabled && edit && (
+        {edit && (
           <NewCard
             columnId={columnId}
+            nextOrder={items.length + addingItems.length}
             onAddCard={() => scrollList()}
             onComplete={() => setEdit(false)}
           />
@@ -135,19 +122,12 @@ export function Column({
   );
 }
 
-type ColumnHeaderProps =
-  | {
-      disabled?: undefined;
-      name: string;
-      columnId: number;
-    }
-  | {
-      disabled: true;
-      name: string;
-      columnId?: undefined;
-    };
+interface ColumnHeaderProps {
+  name: string;
+  columnId: number;
+}
 
-function ColumnHeader({ name, columnId, disabled }: ColumnHeaderProps) {
+function ColumnHeader({ name, columnId }: ColumnHeaderProps) {
   let fetcher = useFetcher();
   let [edit, setEdit] = useState(false);
   let editNameRef = useRef<HTMLInputElement>(null);
@@ -179,7 +159,7 @@ function ColumnHeader({ name, columnId, disabled }: ColumnHeaderProps) {
 
   return (
     <div className="p-2">
-      {!disabled && edit ? (
+      {edit ? (
         <fetcher.Form
           method="post"
           onBlur={(event) => {
@@ -190,11 +170,7 @@ function ColumnHeader({ name, columnId, disabled }: ColumnHeaderProps) {
             }
           }}
         >
-          <input
-            type="hidden"
-            name="intent"
-            value={INTENTS.updateColumn}
-          />
+          <input type="hidden" name="intent" value={INTENTS.updateColumn} />
           <input type="hidden" name="columnId" value={columnId} />
           <input
             ref={editNameRef}
@@ -213,16 +189,32 @@ function ColumnHeader({ name, columnId, disabled }: ColumnHeaderProps) {
         <button
           aria-label={`Edit column "${name}" name`}
           ref={editNameButtonRef}
-          disabled={disabled}
           onClick={() => setEdit(true)}
           type="button"
           className="block rounded-lg text-left w-full border border-transparent py-1 px-2 font-medium text-stone-600"
         >
-          {name || (
-            <span className="text-stone-400 italic">Add name</span>
-          )}
+          {name || <span className="text-stone-400 italic">Add name</span>}
         </button>
       )}
     </div>
   );
+}
+
+function useAddingCards(columnId: number) {
+  type CreateCardFetcher = ReturnType<typeof useFetchers>[0] & { formData: FormData };
+
+  return useFetchers()
+    .filter((fetcher): fetcher is CreateCardFetcher => {
+      return fetcher.formData?.get("intent") === INTENTS.createItem;
+    })
+    .filter((fetcher) => {
+      return fetcher.formData?.get("columnId") === String(columnId);
+    })
+    .map((fetcher) => {
+      let title = String(fetcher.formData.get("title"));
+      let TODO_useClientIds = Number(fetcher.formData.get("clientId"));
+      let order = Number(fetcher.formData.get("order"));
+      let item: Item = { title, id: TODO_useClientIds, order, content: null };
+      return item;
+    });
 }

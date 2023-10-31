@@ -35,26 +35,9 @@ export default function Board() {
     column.items.push(movingItem ? { ...item, order: movingItem.order } : item);
   }
 
-  // We scroll right when a new column edit starts (onAdd from <NewColumn/>) or
-  // a new optimistic column shows up (should be `onSubmit` from `<NewColumn>`
-  // but instead we have this), for some reason flushSync doesn't work with
-  // `submit()` inside of `<NewColumn />` so we can't control the scroll timing
-  // and need to do this weird hack instead, it'll scroll incorrectly in some
-  // network conditions when items fall out of the array, not worried about
-  // that, the real solution is to get `flushSync() => { submit(); onAdd(); }`
-  // to work in other words, this is a huge hack to know we just submitted the
-  // form and rendered a new optimistic column
-  let [addScrollKey, setAddScrollKey] = useState<number | null>(null);
-  if (addingColumns.length > 0) {
-    let last = addingColumns[addingColumns.length - 1].id;
-    if (last !== addScrollKey) setAddScrollKey(last);
-  }
-  if (typeof window !== "undefined") {
-    useLayoutEffect(scrollRight, [addScrollKey]);
-  }
-
   let scrollContainerRef = useRef<HTMLDivElement>(null);
   function scrollRight() {
+    console.log("scroll");
     invariant(scrollContainerRef.current);
     scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
   }
@@ -70,26 +53,25 @@ export default function Board() {
       <div className="flex flex-grow min-h-0 h-full items-start gap-4 px-8 pb-4">
         {[...columns.values()].map((col) => {
           return (
-            <Column key={col.id} name={col.name} columnId={col.id}>
-              {col.items
-                .sort((a, b) => a.order - b.order)
-                .map((item, index, items) => (
-                  <Card
-                    key={item.id}
-                    title={item.title}
-                    content={item.content}
-                    id={item.id}
-                    order={item.order}
-                    columnId={col.id}
-                    previousOrder={items[index - 1] ? items[index - 1].order : 0}
-                    nextOrder={items[index + 1] ? items[index + 1].order : item.order + 1}
-                  />
-                ))}
-            </Column>
+            <Column
+              key={col.id}
+              name={col.name}
+              columnId={col.id}
+              items={col.items.map(({ title, order, id, content }) => ({
+                title,
+                order,
+                id,
+                content,
+              }))}
+            />
           );
         })}
 
-        <NewColumn boardId={board.id} onAdd={scrollRight} editInitially={board.columns.length === 0} />
+        <NewColumn
+          boardId={board.id}
+          onAdd={scrollRight}
+          editInitially={board.columns.length === 0}
+        />
 
         <div data-lol-shutup className="w-8 h-1 flex-shrink-0" />
       </div>
@@ -108,7 +90,7 @@ function useAddingColumns() {
       let name = String(fetcher.formData.get("name"));
       let TODO_useClientIds = Number(fetcher.formData.get("clientId"));
       return { name, id: TODO_useClientIds };
-    }, Array<{ name: string; id: number }>());
+    });
 }
 
 function useMovingCards() {

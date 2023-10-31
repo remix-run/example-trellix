@@ -39,13 +39,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case INTENTS.updateColumn: {
       let { name, columnId } = data;
       if (!name || !columnId) throw badRequest("Missing name or columnId");
-      await updateColumnName(columnId, name);
+      await updateColumnName(Number(columnId), name);
       break;
     }
     case INTENTS.createItem: {
       let { title, columnId } = data;
       if (!title || !columnId) throw badRequest("Missing title or columnId");
-      await createItem(boardId, columnId, title);
+      await createItem(boardId, Number(columnId), title);
       break;
     }
     case INTENTS.moveItem: {
@@ -58,7 +58,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
   }
 
-  return request.headers.get("Sec-Fetch-Dest") === "document" ? redirect(`/board/${boardId}`) : { ok: true, boardId };
+  return request.headers.get("Sec-Fetch-Dest") === "document"
+    ? redirect(`/board/${boardId}`)
+    : { ok: true, boardId };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
