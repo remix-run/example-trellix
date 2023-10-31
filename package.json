@@ -28,6 +28,7 @@
     "@types/react-dom": "^18.2.7",
     "autoprefixer": "^10.4.16",
     "eslint": "^8.38.0",
+    "patch-package": "^8.0.0",
     "postcss": "^8.4.31",
     "prettier": "^3.0.3",
     "prisma": "^5.3.1",

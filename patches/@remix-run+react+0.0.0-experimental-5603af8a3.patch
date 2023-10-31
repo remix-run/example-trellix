@@ -1,0 +1,23 @@
+diff --git a/node_modules/@remix-run/react/dist/esm/browser.js b/node_modules/@remix-run/react/dist/esm/browser.js
+index 7ccf4ea..60fd279 100644
+--- a/node_modules/@remix-run/react/dist/esm/browser.js
++++ b/node_modules/@remix-run/react/dist/esm/browser.js
+@@ -17,8 +17,8 @@ import { createClientRoutesWithHMRRevalidationOptOut, createClientRoutes } from
+ 
+ /* eslint-disable prefer-let/prefer-let */
+ 
++console.log("patched!")
+ /* eslint-enable prefer-let/prefer-let */
+-
+ let router;
+ let hmrAbortController;
+ let hmrRouterReadyResolve;
+@@ -182,7 +182,7 @@ function RemixBrowser(_props) {
+     router: router,
+     fallbackElement: null,
+     future: {
+-      v7_startTransition: true
++      v7_startTransition: false
+     }
+   })));
+ }
