@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { flushSync } from "react-dom";
 import invariant from "tiny-invariant";
-import { INTENTS } from "./INTENTS";
+import { INTENTS } from "./mutations";
 import { Form, useSubmit } from "@remix-run/react";
 import { Icon } from "../../icons/icons";
 
@@ -25,17 +25,21 @@ export function NewColumn({
       className="p-2 flex-shrink-0 flex flex-col gap-5 overflow-hidden max-h-full w-80 border rounded-xl shadow bg-stone-100"
       onSubmit={(event) => {
         event.preventDefault();
-        flushSync(() => {
-          submit(event.currentTarget, { navigate: false });
-        });
+        let formData = new FormData(event.currentTarget);
+        formData.set("id", crypto.randomUUID());
+        submit(formData, { navigate: false, method: "post" });
         onAdd();
         invariant(inputRef.current, "missing input ref");
         inputRef.current.value = "";
       }}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setEdit(false);
+        }
+      }}
     >
       <input type="hidden" name="intent" value={INTENTS.createColumn} />
       <input type="hidden" name="boardId" value={boardId} />
-      <input type="hidden" name="clientId" value={Math.random().toFixed().slice(-2, 8)} />
       <input
         autoFocus
         ref={inputRef}

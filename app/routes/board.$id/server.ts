@@ -1,9 +1,13 @@
 import invariant from "tiny-invariant";
-import { redirect, type ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import {
+  redirect,
+  type ActionFunctionArgs,
+  LoaderFunctionArgs,
+} from "@remix-run/node";
 
 import { prisma } from "../../db/prisma";
 import { badRequest, notFound } from "../../http/bad-response";
-import { INTENTS } from "./INTENTS";
+import { INTENTS, ItemMutation, parseItemMutation } from "./mutations";
 import { requireAuthCookie } from "../../auth/auth";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -18,39 +22,41 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   return { board };
 }
 
+function upsertItem(mutation: ItemMutation & { boardId: number }) {
+  return prisma.item.upsert({
+    where: { id: mutation.id },
+    create: mutation,
+    update: mutation,
+  });
+}
+
 export async function action({ request, params }: ActionFunctionArgs) {
   let boardId = Number(params.id);
   invariant(boardId, "Missing boardId");
 
-  let { intent, ...data } =
-    request.headers.get("Content-Type") === "application/json"
-      ? await request.json()
-      : Object.fromEntries(await request.formData());
+  let formData = await request.formData();
+  let intent = formData.get("intent");
 
   if (!intent) throw badRequest("Missing intent");
 
   switch (intent) {
+    case INTENTS.moveItem:
+    case INTENTS.createItem: {
+      let mutation = parseItemMutation(formData);
+      await upsertItem({ ...mutation, boardId });
+      break;
+    }
     case INTENTS.createColumn: {
-      let name = data.name;
-      if (!name) throw badRequest("Missing name");
-      await createColumn(boardId, name);
+      let { name, id } = Object.fromEntries(formData);
+      invariant(name, "Missing name");
+      invariant(id, "Missing id");
+      await createColumn(boardId, String(name), String(id));
       break;
     }
     case INTENTS.updateColumn: {
-      let { name, columnId } = data;
+      let { name, columnId } = Object.fromEntries(formData);
       if (!name || !columnId) throw badRequest("Missing name or columnId");
-      await updateColumnName(Number(columnId), name);
-      break;
-    }
-    case INTENTS.createItem: {
-      let { title, columnId } = data;
-      if (!title || !columnId) throw badRequest("Missing title or columnId");
-      await createItem(boardId, Number(columnId), title);
-      break;
-    }
-    case INTENTS.moveItem: {
-      let { order, cardId, columnId } = data;
-      await moveItem(cardId, columnId, order);
+      await updateColumnName(String(columnId), String(name));
       break;
     }
     default: {
@@ -67,19 +73,18 @@ export async function action({ request, params }: ActionFunctionArgs) {
 // Controller Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-async function moveItem(cardId: number, columnId: number, order: number) {
+async function moveItem(id: string, columnId: string, order: number) {
   return prisma.item.update({
-    where: {
-      id: cardId,
-    },
-    data: {
-      columnId,
-      order,
-    },
+    where: { id },
+    data: { columnId, order },
   });
 }
 
-export async function createItem(boardId: number, columnId: number, title: string) {
+export async function createItem(
+  boardId: number,
+  columnId: string,
+  title: string,
+) {
   let itemCountForColumn = await prisma.item.count({
     where: { columnId },
   });
@@ -93,21 +98,22 @@ export async function createItem(boardId: number, columnId: number, title: strin
   });
 }
 
-export async function updateColumnName(id: number, name: string) {
+export async function updateColumnName(id: string, name: string) {
   return prisma.column.update({
     where: { id },
     data: { name },
   });
 }
 
-async function createColumn(boardId: number, name: string) {
+async function createColumn(boardId: number, name: string, id: string) {
   let columnCount = await prisma.column.count({
     where: { boardId },
   });
   return prisma.column.create({
     data: {
-      name,
+      id,
       boardId,
+      name,
       order: columnCount + 1,
     },
   });

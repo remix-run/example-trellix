@@ -1,45 +1,52 @@
 import { Link, useFetchers, useLoaderData } from "@remix-run/react";
 import { action } from "./server";
 import { loader } from "./server";
-import { INTENTS } from "./INTENTS";
+import { INTENTS } from "./mutations";
 import { Column } from "./column";
-import { Card } from "./card";
 import { NewColumn } from "./new-column";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import invariant from "tiny-invariant";
+import { RenderedItem } from "./types";
 
 export { loader, action };
 
 export default function Board() {
   let { board } = useLoaderData<typeof loader>();
 
-  let movingFetchers = useMovingCards();
-  let addingColumns = useAddingColumns();
+  let itemsById = new Map(board.items.map((item) => [item.id, item]));
+  let pendingItems = usePendingItems();
 
-  type Column = (typeof board.columns)[0] | (typeof addingColumns)[0];
+  // merge pending items and existing items
+  for (let pendingItem of pendingItems) {
+    let item = itemsById.get(pendingItem.id);
+    let merged = item
+      ? { ...item, ...pendingItem }
+      : { ...pendingItem, boardId: board.id };
+    itemsById.set(pendingItem.id, merged);
+  }
+
+  // merge pending and existing columns
+  let optAddingColumns = useAddingColumns();
+  type Column = (typeof board.columns)[0] | (typeof optAddingColumns)[0];
   type ColumnWithItems = Column & { items: typeof board.items };
-
-  // copy the columns so we can add items to them, including optimistic items
-  let columns = [...board.columns, ...addingColumns].reduce(
-    (map, column) => map.set(column.id, { ...column, items: [] }),
-    new Map<number, ColumnWithItems>(),
+  let columns = [...board.columns, ...optAddingColumns].reduce(
+    (map, column) => map.set(String(column.id), { ...column, items: [] }),
+    new Map<string, ColumnWithItems>(),
   );
 
   // add items to their columns
-  for (let item of board.items) {
-    // check optimistic versions first
-    let movingItem = movingFetchers.get(item.id);
-    let columnId = movingItem ? movingItem.columnId : item.columnId;
+  for (let item of itemsById.values()) {
+    let columnId = item.columnId;
     let column = columns.get(columnId);
     invariant(column, "missing column");
-    column.items.push(movingItem ? { ...item, order: movingItem.order } : item);
+    column.items.push(item);
   }
 
   let scrollContainerRef = useRef<HTMLDivElement>(null);
   function scrollRight() {
-    console.log("scroll");
     invariant(scrollContainerRef.current);
-    scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
+    scrollContainerRef.current.scrollLeft =
+      scrollContainerRef.current.scrollWidth;
   }
 
   return (
@@ -57,12 +64,7 @@ export default function Board() {
               key={col.id}
               name={col.name}
               columnId={col.id}
-              items={col.items.map(({ title, order, id, content }) => ({
-                title,
-                order,
-                id,
-                content,
-              }))}
+              items={col.items}
             />
           );
         })}
@@ -80,7 +82,9 @@ export default function Board() {
 }
 
 function useAddingColumns() {
-  type CreateColumnFetcher = ReturnType<typeof useFetchers>[0] & { formData: FormData };
+  type CreateColumnFetcher = ReturnType<typeof useFetchers>[0] & {
+    formData: FormData;
+  };
 
   return useFetchers()
     .filter((fetcher): fetcher is CreateColumnFetcher => {
@@ -88,25 +92,29 @@ function useAddingColumns() {
     })
     .map((fetcher) => {
       let name = String(fetcher.formData.get("name"));
-      let TODO_useClientIds = Number(fetcher.formData.get("clientId"));
-      return { name, id: TODO_useClientIds };
+      let id = String(fetcher.formData.get("id"));
+      return { name, id };
     });
 }
 
-function useMovingCards() {
-  type MovingFetcher = ReturnType<typeof useFetchers>[0] & {
-    json: { cardId: number; columnId: number; order: number };
+function usePendingItems() {
+  type PendingItem = ReturnType<typeof useFetchers>[0] & {
+    formData: FormData;
   };
-
   return useFetchers()
-    .filter((fetcher): fetcher is MovingFetcher => {
-      let json = fetcher.json as unknown as any;
-      return json && json.intent === INTENTS.moveItem;
+    .filter((fetcher): fetcher is PendingItem => {
+      if (!fetcher.formData) return false;
+      let intent = fetcher.formData.get("intent");
+      return intent === INTENTS.createItem || intent === INTENTS.moveItem;
     })
-    .reduce((map, fetcher) => {
-      let { cardId, columnId, order } = fetcher.json;
-      return map.set(cardId, { columnId, order });
-    }, new Map<number, { columnId: number; order: number }>());
+    .map((fetcher) => {
+      let columnId = String(fetcher.formData.get("columnId"));
+      let title = String(fetcher.formData.get("title"));
+      let id = String(fetcher.formData.get("id"));
+      let order = Number(fetcher.formData.get("order"));
+      let item: RenderedItem = { title, id, order, columnId, content: null };
+      return item;
+    });
 }
 
 export function ErrorBoundary() {

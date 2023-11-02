@@ -1,20 +1,29 @@
 import { useSubmit } from "@remix-run/react";
 import { useState } from "react";
-import { INTENTS } from "./INTENTS";
+import { INTENTS, ItemMutation } from "./mutations";
 import invariant from "tiny-invariant";
 import { CONTENT_TYPES } from "./CONTENT_TYPES";
+import { flushSync } from "react-dom";
 
 interface CardProps {
   title: string;
   content: string | null;
-  id: number;
-  columnId: number;
+  id: string;
+  columnId: string;
   order: number;
   nextOrder: number;
   previousOrder: number;
 }
 
-export function Card({ title, content, id, columnId, order, nextOrder, previousOrder }: CardProps) {
+export function Card({
+  title,
+  content,
+  id,
+  columnId,
+  order,
+  nextOrder,
+  previousOrder,
+}: CardProps) {
   let submit = useSubmit();
 
   let [acceptDrop, setAcceptDrop] = useState<"none" | "top" | "bottom">("none");
@@ -36,25 +45,30 @@ export function Card({ title, content, id, columnId, order, nextOrder, previousO
       onDrop={(event) => {
         event.stopPropagation();
 
-        let cardId = JSON.parse(event.dataTransfer.getData(CONTENT_TYPES.card));
-        invariant(typeof cardId === "number", "missing cardId");
+        let transfer = JSON.parse(
+          event.dataTransfer.getData(CONTENT_TYPES.card),
+        );
+        invariant(transfer.id, "missing cardId");
+        invariant(transfer.title, "missing title");
 
         let droppedOrder = acceptDrop === "top" ? previousOrder : nextOrder;
         let moveOrder = (droppedOrder + order) / 2;
 
-        let json = {
-          intent: INTENTS.moveItem,
+        let mutation: ItemMutation = {
           order: moveOrder,
-          cardId: cardId,
           columnId: columnId,
+          id: transfer.id,
+          title: transfer.title,
         };
 
-        submit(json, {
-          method: "post",
-          encType: "application/json",
-          navigate: false,
-          fetcherKey: `${INTENTS.moveItem}:${cardId}`,
-        });
+        submit(
+          { ...mutation, intent: INTENTS.moveItem },
+          {
+            method: "post",
+            navigate: false,
+            fetcherKey: `card:${transfer.id}`,
+          },
+        );
 
         setAcceptDrop("none");
       }}
@@ -72,7 +86,10 @@ export function Card({ title, content, id, columnId, order, nextOrder, previousO
         draggable
         onDragStart={(event) => {
           event.dataTransfer.effectAllowed = "move";
-          event.dataTransfer.setData(CONTENT_TYPES.card, String(id));
+          event.dataTransfer.setData(
+            CONTENT_TYPES.card,
+            JSON.stringify({ id, title }),
+          );
         }}
       >
         <h3>{title}</h3>
@@ -80,4 +97,22 @@ export function Card({ title, content, id, columnId, order, nextOrder, previousO
       </div>
     </li>
   );
+}
+
+function useViewTransition() {
+  let [pending, setPending] = useState(false);
+  async function startTransition(fn: () => void) {
+    flushSync(() => {
+      setPending(true);
+    });
+    if (document.startViewTransition) {
+      let tn = document.startViewTransition(() => fn());
+      await tn.finished;
+      setPending(false);
+    } else {
+      fn();
+      setPending(false);
+    }
+  }
+  return [startTransition, pending] as const;
 }

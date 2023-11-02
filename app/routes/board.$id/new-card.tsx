@@ -1,7 +1,9 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import invariant from "tiny-invariant";
-import { Form } from "@remix-run/react";
-import { INTENTS } from "./INTENTS";
+import { Form, useSubmit } from "@remix-run/react";
+import { INTENTS } from "./mutations";
+
+import { ItemMutationFields } from "./mutations";
 
 export function NewCard({
   columnId,
@@ -9,26 +11,35 @@ export function NewCard({
   onComplete,
   onAddCard,
 }: {
-  columnId: number;
+  columnId: string;
   nextOrder: number;
   onComplete: () => void;
   onAddCard: () => void;
 }) {
   let textAreaRef = useRef<HTMLTextAreaElement>(null);
   let buttonRef = useRef<HTMLButtonElement>(null);
+  let submit = useSubmit();
 
   return (
     <Form
-      navigate={false}
       method="post"
       className="px-2 py-1 border-t-2 border-b-2 border-transparent"
-      onSubmit={() => {
-        // TODO: depends on <Form flushSync> currently patched
-        requestAnimationFrame(() => {
-          onAddCard();
-          invariant(textAreaRef.current);
-          textAreaRef.current.value = "";
+      onSubmit={(event) => {
+        event.preventDefault();
+
+        let formData = new FormData(event.currentTarget);
+        let id = crypto.randomUUID();
+        formData.set(ItemMutationFields.id.name, id);
+
+        submit(formData, {
+          method: "post",
+          fetcherKey: `card:${id}`,
+          navigate: false,
         });
+
+        invariant(textAreaRef.current);
+        textAreaRef.current.value = "";
+        onAddCard();
       }}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
@@ -37,13 +48,22 @@ export function NewCard({
       }}
     >
       <input type="hidden" name="intent" value={INTENTS.createItem} />
-      <input type="hidden" name="columnId" value={columnId} />
-      <input type="hidden" name="clientId" value={crypto.randomUUID()} />
-      <input type="hidden" name="order" value={nextOrder} />
+      <input
+        type="hidden"
+        name={ItemMutationFields.columnId.name}
+        value={columnId}
+      />
+      <input
+        type="hidden"
+        name={ItemMutationFields.order.name}
+        value={nextOrder}
+      />
+
       <textarea
         autoFocus
+        required
         ref={textAreaRef}
-        name="title"
+        name={ItemMutationFields.title.name}
         placeholder="Enter a title for this card"
         className="outline-none shadow text-sm rounded-lg w-full py-1 px-2 resize-none placeholder:text-sm placeholder:text-stone-500 h-14"
         onKeyDown={(event) => {
