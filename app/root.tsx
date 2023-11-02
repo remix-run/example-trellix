@@ -11,10 +11,14 @@ import {
 import "./styles.css";
 import { LoginIcon, LogoutIcon } from "./icons/icons";
 import { getAuthFromRequest } from "./auth/auth";
-import { type DataFunctionArgs } from "@remix-run/node";
+import { redirect, type DataFunctionArgs } from "@remix-run/node";
 
 export async function loader({ request }: DataFunctionArgs) {
-  return getAuthFromRequest(request);
+  let auth = await getAuthFromRequest(request);
+  if (auth && new URL(request.url).pathname === "/") {
+    throw redirect("/home");
+  }
+  return auth;
 }
 
 export function shouldRevalidate({ formAction }: ShouldRevalidateFunctionArgs) {
