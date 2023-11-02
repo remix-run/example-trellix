@@ -5,32 +5,95 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
+  type ShouldRevalidateFunctionArgs,
 } from "@remix-run/react";
-import stylesHref from "./styles.css?url";
+import "./styles.css";
+import { LoginIcon, LogoutIcon } from "./icons/icons";
+import { getAuthFromRequest } from "./auth/auth";
+import { type DataFunctionArgs } from "@remix-run/node";
+
+export async function loader({ request }: DataFunctionArgs) {
+  return getAuthFromRequest(request);
+}
+
+export function shouldRevalidate({ formAction }: ShouldRevalidateFunctionArgs) {
+  return formAction && ["/login", "/signup", "logout"].includes(formAction);
+}
 
 export default function App() {
+  let userId = useLoaderData<typeof loader>();
+
   return (
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-        <link rel="stylesheet" href={stylesHref} />
         <Meta />
         <Links />
       </head>
-      <body className="h-screen overflow-hidden">
+      <body className="h-screen bg-slate-100 text-slate-900">
         <div className="h-full flex flex-col min-h-0">
-          <div className="bg-stone-800">
-            <img
-              src="/remix-logo-new@dark.png"
-              alt="Remix Logo: Colorful letters glowing on a dark background"
-              className="h-16 py-2 px-8"
-            />
+          <div className="bg-slate-900 border-b border-slate-800 flex items-center justify-between py-4 px-8 box-border">
+            <div className="leading-3">
+              <div className="font-black text-2xl text-white">Trellix</div>
+              <div className="text-slate-500">a Remix Demo</div>
+            </div>
+            <div className="flex gap-4 items-center">
+              <a href="https://remix.run/docs" className="block text-center">
+                <img
+                  src="/yt_icon_mono_dark.png"
+                  alt="YouTube Logo"
+                  className="inline-block h-8"
+                />
+                <br />
+                <span className="text-slate-500">Tutorials</span>
+              </a>
+              <a
+                href="https://github.com/remix-run/example-trellix"
+                className="block text-center"
+              >
+                <img
+                  src="/github-mark-white.png"
+                  alt="GitHub Octocat Logo: A cat with an octopus tentacle arm"
+                  className="inline-block h-8"
+                />
+                <br />
+                <span className="text-slate-500">Source</span>
+              </a>
+              <a
+                href="https://remix.run/docs/en/main"
+                className="block text-center"
+              >
+                <img
+                  src="/r.png"
+                  alt="Remix Logo"
+                  className="inline-block h-8"
+                />
+                <br />
+                <span className="text-slate-500">Docs</span>
+              </a>
+            </div>
+            {userId ? (
+              <>
+                <form id="logout-form" hidden method="post" action="/logout" />
+                <button form="logout-form" className="block text-center">
+                  <LogoutIcon />
+                  <br />
+                  <span className="text-slate-500">Log out</span>
+                </button>
+              </>
+            ) : (
+              <a
+                href="https://remix.run/docs/en/main"
+                className="block text-center"
+              >
+                <LoginIcon />
+                <br />
+                <span className="text-slate-500">Log in</span>
+              </a>
+            )}
           </div>
 
           <div className="flex-grow min-h-0 h-full">

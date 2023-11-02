@@ -34,7 +34,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function Projects() {
   return (
-    <div className="h-full bg-gray-50">
+    <div className="h-full">
       <NewBoard />
       <Boards />
     </div>
@@ -85,7 +85,7 @@ function NewBoard() {
             name="name"
             type="text"
             required
-            className="form-input block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            className="form-input block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-blue sm:text-sm sm:leading-6"
           />
         </div>
       </div>
@@ -102,13 +102,13 @@ function NewBoard() {
             id="board-color"
             name="color"
             type="color"
-            defaultValue="#e0e0e0"
-            className="p-0 border"
+            defaultValue="#cbd5e1"
+            className="bg-transparent"
           />
         </div>
         <button
           type="submit"
-          className="flex w-full justify-center rounded-md bg-brand-blue px-1 py-1 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          className="flex w-full justify-center rounded-md bg-brand-blue px-1 py-1 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
         >
           {navigation.state !== "idle" ? "Creating..." : "Create"}
         </button>

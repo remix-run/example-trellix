@@ -34,7 +34,7 @@ export function Column({ name, columnId, items }: ColumnProps) {
   return (
     <div
       className={
-        "flex-shrink-0 flex flex-col overflow-hidden max-h-full w-80 border rounded-xl shadow bg-stone-100 " +
+        "flex-shrink-0 flex flex-col overflow-hidden max-h-full w-80 border-slate-400 rounded-xl shadow-sm shadow-slate-400 bg-slate-100 " +
         (acceptDrop ? `outline outline-2 outline-brand-red` : ``)
       }
       onDragOver={(event) => {
@@ -52,6 +52,7 @@ export function Column({ name, columnId, items }: ColumnProps) {
         );
         invariant(transfer.id, "missing transfer.id");
         invariant(transfer.title, "missing transfer.title");
+
         let mutation: ItemMutation = {
           order: 1,
           columnId: columnId,
@@ -111,7 +112,7 @@ export function Column({ name, columnId, items }: ColumnProps) {
               });
               scrollList();
             }}
-            className="flex items-center gap-2 rounded-lg text-left w-full p-2 font-medium text-stone-500 hover:bg-stone-200 focus:bg-stone-200"
+            className="flex items-center gap-2 rounded-lg text-left w-full p-2 font-medium text-slate-500 hover:bg-slate-200 focus:bg-slate-200"
           >
             <Icon name="plus" /> Add a card
           </button>
@@ -176,7 +177,7 @@ function ColumnHeader({ name, columnId }: ColumnHeaderProps) {
             type="text"
             name="name"
             defaultValue={name}
-            className="border border-stone-400 w-full rounded-lg py-1 px-2 font-medium text-black"
+            className="border border-slate-400 w-full rounded-lg py-1 px-2 font-medium text-black"
             onKeyDown={(event) => {
               if (event.key === "Escape") {
                 setEdit(false);
@@ -190,9 +191,9 @@ function ColumnHeader({ name, columnId }: ColumnHeaderProps) {
           ref={editNameButtonRef}
           onClick={() => setEdit(true)}
           type="button"
-          className="block rounded-lg text-left w-full border border-transparent py-1 px-2 font-medium text-stone-600"
+          className="block rounded-lg text-left w-full border border-transparent py-1 px-2 font-medium text-slate-600"
         >
-          {name || <span className="text-stone-400 italic">Add name</span>}
+          {name || <span className="text-slate-400 italic">Add name</span>}
         </button>
       )}
     </div>

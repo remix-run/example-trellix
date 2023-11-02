@@ -1,6 +1,15 @@
 import { prisma } from "../../db/prisma";
 import crypto from "crypto";
 
+export async function accountExists(email: string) {
+  let account = await prisma.account.findUnique({
+    where: { email: email },
+    select: { id: true },
+  });
+
+  return Boolean(account);
+}
+
 export async function createAccount(email: string, password: string) {
   let salt = crypto.randomBytes(16).toString("hex");
   let hash = crypto

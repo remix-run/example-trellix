@@ -23,3 +23,19 @@ export function Icon({
     </svg>
   );
 }
+
+export function LoginIcon() {
+  return (
+    <svg className="inline self-center w-8 h-8 text-white">
+      <use href={`${iconsHref}#login`} />
+    </svg>
+  );
+}
+
+export function LogoutIcon() {
+  return (
+    <svg className="inline self-center w-8 h-8 text-white">
+      <use href={`${iconsHref}#logout`} />
+    </svg>
+  );
+}

@@ -65,7 +65,7 @@ export function NewCard({
         ref={textAreaRef}
         name={ItemMutationFields.title.name}
         placeholder="Enter a title for this card"
-        className="outline-none shadow text-sm rounded-lg w-full py-1 px-2 resize-none placeholder:text-sm placeholder:text-stone-500 h-14"
+        className="outline-none shadow text-sm rounded-lg w-full py-1 px-2 resize-none placeholder:text-sm placeholder:text-slate-500 h-14"
         onKeyDown={(event) => {
           if (event.key === "Enter") {
             event.preventDefault();
@@ -92,7 +92,7 @@ export function NewCard({
         <button
           type="button"
           onClick={onComplete}
-          className="text-sm rounded-lg text-left p-2 font-medium hover:bg-stone-200 focus:bg-stone-200"
+          className="text-sm rounded-lg text-left p-2 font-medium hover:bg-slate-200 focus:bg-slate-200"
         >
           Cancel
         </button>
