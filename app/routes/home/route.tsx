@@ -3,15 +3,14 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from "@remix-run/node";
-import { requireAuthCookie } from "../../auth/auth";
-import { getHomeData, createBoard } from "./query";
-import {
-  Form,
-  Link,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-} from "@remix-run/react";
+import { Form, Link, useLoaderData, useNavigation } from "@remix-run/react";
+
+import { requireAuthCookie } from "~/auth/auth";
+import { Button } from "~/components/button";
+import { Label, LabeledInput } from "~/components/input";
+import { badRequest } from "~/http/bad-response";
+
+import { getHomeData, createBoard } from "./queries";
 
 export const meta = () => {
   return [{ title: "Boards" }];
@@ -28,10 +27,7 @@ export async function action({ request }: ActionFunctionArgs) {
   let formData = await request.formData();
   let name = String(formData.get("name"));
   let color = String(formData.get("color"));
-  if (!name) {
-    return { ok: false, message: "Board name is required" };
-  }
-
+  if (!name) throw badRequest("Bad request");
   let board = await createBoard(userId, name, color);
   throw redirect(`/board/${board.id}`);
 }
@@ -67,41 +63,20 @@ function Boards() {
 }
 
 function NewBoard() {
-  let actionData = useActionData<typeof action>();
   let navigation = useNavigation();
+  let isCreating = navigation.formData?.get("intent") === "createBoard";
 
   return (
     <Form method="post" className="p-8 max-w-md">
+      <input type="hidden" name="intent" value="createBoard" />
       <div>
         <h2 className="font-bold mb-2 text-xl">New Board</h2>
-        <label
-          htmlFor="board-name"
-          className="block text-sm font-medium leading-6 text-gray-900"
-        >
-          Name{" "}
-          {actionData?.ok === false ? (
-            <span className="text-brand-red">{actionData.message}</span>
-          ) : null}
-        </label>
-        <div className="mt-2">
-          <input
-            id="board-name"
-            name="name"
-            type="text"
-            required
-            className="form-input block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-blue sm:text-sm sm:leading-6"
-          />
-        </div>
+        <LabeledInput label="Name" name="name" type="text" required />
       </div>
 
       <div className="mt-4 flex items-center gap-4">
         <div className="flex items-center gap-1">
-          <label
-            htmlFor="board-color"
-            className="text-sm font-medium leading-6 text-gray-900"
-          >
-            Color
-          </label>
+          <Label htmlFor="board-color">Color</Label>
           <input
             id="board-color"
             name="color"
@@ -110,12 +85,7 @@ function NewBoard() {
             className="bg-transparent"
           />
         </div>
-        <button
-          type="submit"
-          className="flex w-full justify-center rounded-md bg-brand-blue px-1 py-1 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
-        >
-          {navigation.state !== "idle" ? "Creating..." : "Create"}
-        </button>
+        <Button type="submit">{isCreating ? "Creating..." : "Create"}</Button>
       </div>
     </Form>
   );

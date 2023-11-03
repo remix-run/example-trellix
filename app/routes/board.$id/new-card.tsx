@@ -1,9 +1,9 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import invariant from "tiny-invariant";
 import { Form, useSubmit } from "@remix-run/react";
-import { INTENTS } from "./mutations";
 
-import { ItemMutationFields } from "./mutations";
+import { INTENTS, ItemMutationFields } from "./types";
+import { SaveButton, CancelButton } from "./components";
 
 export function NewCard({
   columnId,
@@ -82,20 +82,8 @@ export function NewCard({
         }}
       />
       <div className="flex justify-between">
-        <button
-          ref={buttonRef}
-          type="submit"
-          className="text-sm rounded-lg text-left p-2 font-medium text-white bg-brand-blue"
-        >
-          Save Card
-        </button>
-        <button
-          type="button"
-          onClick={onComplete}
-          className="text-sm rounded-lg text-left p-2 font-medium hover:bg-slate-200 focus:bg-slate-200"
-        >
-          Cancel
-        </button>
+        <SaveButton ref={buttonRef}>Save Card</SaveButton>
+        <CancelButton onClick={onComplete}>Cancel</CancelButton>
       </div>
     </Form>
   );

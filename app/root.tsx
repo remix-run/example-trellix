@@ -9,10 +9,12 @@ import {
   type ShouldRevalidateFunctionArgs,
   Link,
 } from "@remix-run/react";
-import "./styles.css";
+import { redirect, type DataFunctionArgs } from "@remix-run/node";
+
 import { LoginIcon, LogoutIcon } from "./icons/icons";
 import { getAuthFromRequest } from "./auth/auth";
-import { redirect, type DataFunctionArgs } from "@remix-run/node";
+
+import "./styles.css";
 
 export async function loader({ request }: DataFunctionArgs) {
   let auth = await getAuthFromRequest(request);

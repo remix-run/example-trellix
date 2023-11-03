@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { prisma } from "../../db/prisma";
+import { prisma } from "~/db/prisma";
 
 export async function login(email: string, password: string) {
   let user = await prisma.account.findUnique({

@@ -1,14 +1,17 @@
 import invariant from "tiny-invariant";
-import {
-  redirect,
-  type ActionFunctionArgs,
-  LoaderFunctionArgs,
-} from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 
-import { prisma } from "../../db/prisma";
-import { badRequest, notFound } from "../../http/bad-response";
-import { INTENTS, ItemMutation, parseItemMutation } from "./mutations";
-import { requireAuthCookie } from "../../auth/auth";
+import { badRequest, notFound } from "~/http/bad-response";
+import { requireAuthCookie } from "~/auth/auth";
+
+import { parseItemMutation } from "./utils";
+import { INTENTS } from "./types";
+import {
+  createColumn,
+  updateColumnName,
+  getBoardData,
+  upsertItem,
+} from "./queries";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireAuthCookie(request);
@@ -20,14 +23,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!board) throw notFound();
 
   return { board };
-}
-
-function upsertItem(mutation: ItemMutation & { boardId: number }) {
-  return prisma.item.upsert({
-    where: { id: mutation.id },
-    create: mutation,
-    update: mutation,
-  });
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -64,77 +59,5 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
   }
 
-  return request.headers.get("Sec-Fetch-Dest") === "document"
-    ? redirect(`/board/${boardId}`)
-    : { ok: true, boardId };
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Controller Functions
-////////////////////////////////////////////////////////////////////////////////
-
-async function moveItem(id: string, columnId: string, order: number) {
-  return prisma.item.update({
-    where: { id },
-    data: { columnId, order },
-  });
-}
-
-export async function createItem(
-  boardId: number,
-  columnId: string,
-  title: string,
-) {
-  let itemCountForColumn = await prisma.item.count({
-    where: { columnId },
-  });
-  return prisma.item.create({
-    data: {
-      title,
-      columnId,
-      boardId,
-      order: itemCountForColumn + 1,
-    },
-  });
-}
-
-export async function updateColumnName(id: string, name: string) {
-  return prisma.column.update({
-    where: { id },
-    data: { name },
-  });
-}
-
-async function createColumn(boardId: number, name: string, id: string) {
-  let columnCount = await prisma.column.count({
-    where: { boardId },
-  });
-  return prisma.column.create({
-    data: {
-      id,
-      boardId,
-      name,
-      order: columnCount + 1,
-    },
-  });
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Public Functions
-////////////////////////////////////////////////////////////////////////////////
-
-export async function getBoardData(boardId: number) {
-  return prisma.board.findUnique({
-    where: {
-      id: boardId,
-    },
-    include: {
-      items: true,
-      columns: {
-        orderBy: {
-          order: "asc",
-        },
-      },
-    },
-  });
+  return { ok: true };
 }

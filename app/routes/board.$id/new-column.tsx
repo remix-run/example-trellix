@@ -1,9 +1,11 @@
 import { useState, useRef } from "react";
 import { flushSync } from "react-dom";
 import invariant from "tiny-invariant";
-import { INTENTS } from "./mutations";
+import { Icon } from "~/icons/icons";
 import { Form, useSubmit } from "@remix-run/react";
-import { Icon } from "../../icons/icons";
+
+import { INTENTS } from "./types";
+import { CancelButton, SaveButton } from "./components";
 
 export function NewColumn({
   boardId,
@@ -48,19 +50,8 @@ export function NewColumn({
         className="border border-slate-400 w-full rounded-lg py-1 px-2 font-medium text-black"
       />
       <div className="flex justify-between">
-        <button
-          type="submit"
-          className="text-sm rounded-lg text-left p-2 font-medium text-white bg-brand-blue"
-        >
-          Save Column
-        </button>
-        <button
-          type="button"
-          onClick={() => setEdit(false)}
-          className="text-sm rounded-lg text-left p-2 font-medium hover:bg-slate-200 focus:bg-slate-200"
-        >
-          Cancel
-        </button>
+        <SaveButton>Save Column</SaveButton>
+        <CancelButton onClick={() => setEdit(false)}>Cancel</CancelButton>
       </div>
     </Form>
   ) : (

@@ -1,9 +1,9 @@
+import { flushSync } from "react-dom";
+import invariant from "tiny-invariant";
 import { useSubmit } from "@remix-run/react";
 import { useState } from "react";
-import { INTENTS, ItemMutation } from "./mutations";
-import invariant from "tiny-invariant";
-import { CONTENT_TYPES } from "./CONTENT_TYPES";
-import { flushSync } from "react-dom";
+
+import { ItemMutation, INTENTS, CONTENT_TYPES } from "./types";
 
 interface CardProps {
   title: string;

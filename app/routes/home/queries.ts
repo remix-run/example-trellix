@@ -1,4 +1,4 @@
-import { prisma } from "../../db/prisma";
+import { prisma } from "~/db/prisma";
 
 export async function createBoard(userId: string, name: string, color: string) {
   return prisma.board.create({

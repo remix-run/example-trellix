@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { useFetcher, useSubmit } from "@remix-run/react";
 
-import { Icon } from "../../icons/icons";
+import { Icon } from "~/icons/icons";
 
-import { INTENTS, ItemMutation } from "./mutations";
+import {
+  ItemMutation,
+  INTENTS,
+  CONTENT_TYPES,
+  type RenderedItem,
+} from "./types";
 import invariant from "tiny-invariant";
 import { NewCard } from "./new-card";
 import { flushSync } from "react-dom";
-import { CONTENT_TYPES } from "./CONTENT_TYPES";
 import { Card } from "./card";
-import type { RenderedItem } from "./types";
 
 interface ColumnProps {
   name: string;

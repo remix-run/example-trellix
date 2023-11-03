@@ -1,13 +1,12 @@
-import {
-  json,
-  type ActionFunctionArgs,
-  redirect,
-  DataFunctionArgs,
-} from "@remix-run/node";
-import { validate } from "./validate";
+import { json, type ActionFunctionArgs, redirect } from "@remix-run/node";
 import { Form, Link, useActionData } from "@remix-run/react";
-import { createAccount } from "./account";
-import { redirectIfLoggedInLoader, setAuthOnResponse } from "../../auth/auth";
+
+import { redirectIfLoggedInLoader, setAuthOnResponse } from "~/auth/auth";
+import { Label, Input } from "~/components/input";
+import { Button } from "~/components/button";
+
+import { validate } from "./validate";
+import { createAccount } from "./queries";
 
 export const loader = redirectIfLoggedInLoader;
 
@@ -48,18 +47,15 @@ export default function Signup() {
         <div className="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
           <Form className="space-y-6" method="post">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
+              <Label htmlFor="email">
                 Email address{" "}
                 {actionResult?.errors?.email && (
                   <span id="email-error" className="text-brand-red">
                     {actionResult.errors.email}
                   </span>
                 )}
-              </label>
-              <input
+              </Label>
+              <Input
                 autoFocus
                 id="email"
                 name="email"
@@ -69,41 +65,30 @@ export default function Signup() {
                   actionResult?.errors?.email ? "email-error" : "signup-header"
                 }
                 required
-                className="form-input block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-blue sm:text-sm sm:leading-6"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
+              <Label htmlFor="password">
                 Password{" "}
                 {actionResult?.errors?.password && (
                   <span id="password-error" className="text-brand-red">
                     {actionResult.errors.password}
                   </span>
                 )}
-              </label>
-              <input
+              </Label>
+              <Input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="current-password"
                 aria-describedby="password-error"
                 required
-                className="form-input block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-blue sm:text-sm sm:leading-6"
               />
             </div>
 
-            <div>
-              <button
-                type="submit"
-                className="flex w-full justify-center rounded-md bg-pink-brand px-3 py-1.5 text-sm font-semibold leading-6 text-white bg-brand-blue shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
-              >
-                Sign in
-              </button>
-            </div>
+            <Button type="submit">Sign in</Button>
+
             <div className="text-sm text-slate-500">
               Already have an account?{" "}
               <Link className="underline" to="/login">
