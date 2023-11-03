@@ -7,6 +7,7 @@ import {
   ScrollRestoration,
   useLoaderData,
   type ShouldRevalidateFunctionArgs,
+  Link,
 } from "@remix-run/react";
 import "./styles.css";
 import { LoginIcon, LogoutIcon } from "./icons/icons";
@@ -40,23 +41,28 @@ export default function App() {
       <body className="h-screen bg-slate-100 text-slate-900">
         <div className="h-full flex flex-col min-h-0">
           <div className="bg-slate-900 border-b border-slate-800 flex items-center justify-between py-4 px-8 box-border">
-            <div className="leading-3">
+            <div className="leading-3 w-1/3">
               <div className="font-black text-2xl text-white">Trellix</div>
               <div className="text-slate-500">a Remix Demo</div>
             </div>
-            <div className="flex gap-4 items-center">
-              <a href="https://remix.run/docs" className="block text-center">
+            <div className="flex items-center">
+              <a
+                href="https://remix.run/docs"
+                className="flex-1 block text-center w-20"
+              >
                 <img
                   src="/yt_icon_mono_dark.png"
                   alt="YouTube Logo"
                   className="inline-block h-8"
                 />
                 <br />
-                <span className="text-slate-500">Tutorials</span>
+                <span className="text-slate-500 text-xs uppercase font-bold">
+                  Videos
+                </span>
               </a>
               <a
                 href="https://github.com/remix-run/example-trellix"
-                className="block text-center"
+                className="block text-center flex-1 w-20"
               >
                 <img
                   src="/github-mark-white.png"
@@ -64,11 +70,13 @@ export default function App() {
                   className="inline-block h-8"
                 />
                 <br />
-                <span className="text-slate-500">Source</span>
+                <span className="text-slate-500 text-xs uppercase font-bold">
+                  Source
+                </span>
               </a>
               <a
                 href="https://remix.run/docs/en/main"
-                className="block text-center"
+                className="block text-center flex-1 w-20"
               >
                 <img
                   src="/r.png"
@@ -76,28 +84,32 @@ export default function App() {
                   className="inline-block h-8"
                 />
                 <br />
-                <span className="text-slate-500">Docs</span>
+                <span className="text-slate-500 text-xs uppercase font-bold">
+                  Docs
+                </span>
               </a>
             </div>
-            {userId ? (
-              <>
-                <form id="logout-form" hidden method="post" action="/logout" />
-                <button form="logout-form" className="block text-center">
-                  <LogoutIcon />
+            <div className="w-1/3 flex justify-end">
+              {userId ? (
+                <form method="post" action="/logout">
+                  <button className="block text-center">
+                    <LogoutIcon />
+                    <br />
+                    <span className="text-slate-500 text-xs uppercase font-bold">
+                      Log out
+                    </span>
+                  </button>
+                </form>
+              ) : (
+                <Link to="/login" className="block text-center">
+                  <LoginIcon />
                   <br />
-                  <span className="text-slate-500">Log out</span>
-                </button>
-              </>
-            ) : (
-              <a
-                href="https://remix.run/docs/en/main"
-                className="block text-center"
-              >
-                <LoginIcon />
-                <br />
-                <span className="text-slate-500">Log in</span>
-              </a>
-            )}
+                  <span className="text-slate-500 text-xs uppercase font-bold">
+                    Log in
+                  </span>
+                </Link>
+              )}
+            </div>
           </div>
 
           <div className="flex-grow min-h-0 h-full">

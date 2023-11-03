@@ -7,8 +7,14 @@ import { NewColumn } from "./new-column";
 import { useRef } from "react";
 import invariant from "tiny-invariant";
 import { RenderedItem } from "./types";
+import { MetaFunction } from "@remix-run/node";
 
 export { loader, action };
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data) return [];
+  return [{ title: `${data.board.name} | Trellix` }];
+};
 
 export default function Board() {
   let { board } = useLoaderData<typeof loader>();

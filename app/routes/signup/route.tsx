@@ -7,9 +7,13 @@ import {
 import { validate } from "./validate";
 import { Form, Link, useActionData } from "@remix-run/react";
 import { createAccount } from "./account";
-import { redirectIfLoggedInLoader } from "../../auth/auth";
+import { redirectIfLoggedInLoader, setAuthOnResponse } from "../../auth/auth";
 
 export const loader = redirectIfLoggedInLoader;
+
+export const meta = () => {
+  return [{ title: "Trellix Signup" }];
+};
 
 export async function action({ request }: ActionFunctionArgs) {
   let formData = await request.formData();
@@ -22,8 +26,8 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ ok: false, errors }, 400);
   }
 
-  await createAccount(email, password);
-  return redirect("/home");
+  let user = await createAccount(email, password);
+  return setAuthOnResponse(redirect("/home"), user.id);
 }
 
 export default function Signup() {

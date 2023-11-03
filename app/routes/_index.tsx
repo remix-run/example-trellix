@@ -2,10 +2,7 @@ import type { MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
-  return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
-  ];
+  return [{ title: "Trellix, a Remix Demo" }];
 };
 
 export default function Index() {
@@ -22,13 +19,13 @@ export default function Index() {
           .
         </p>
         <p>
-          {" "}
           It's a recreation of the popular drag and drop interface in{" "}
           <a href="https://trello.com" className="underline">
             Trello
           </a>{" "}
           and other similar apps.
         </p>
+        <p>If you want to play around, click sign up!</p>
       </div>
       <div className="flex w-full justify-evenly max-w-md mt-8 rounded-3xl p-10 bg-slate-800">
         <Link

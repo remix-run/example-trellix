@@ -13,6 +13,10 @@ import {
   useNavigation,
 } from "@remix-run/react";
 
+export const meta = () => {
+  return [{ title: "Boards" }];
+};
+
 export async function loader({ request }: LoaderFunctionArgs) {
   let userId = await requireAuthCookie(request);
   let boards = await getHomeData(userId);

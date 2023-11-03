@@ -1,10 +1,14 @@
 import { json, redirect, type DataFunctionArgs } from "@remix-run/node";
 import { validate } from "./validate";
-import { Form, useActionData } from "@remix-run/react";
+import { Form, Link, useActionData } from "@remix-run/react";
 import { login } from "./login";
 import { redirectIfLoggedInLoader, setAuthOnResponse } from "../../auth/auth";
 
 export const loader = redirectIfLoggedInLoader;
+
+export const meta = () => {
+  return [{ title: "Trellix Login" }];
+};
 
 export async function action({ request }: DataFunctionArgs) {
   let formData = await request.formData();
@@ -102,6 +106,13 @@ export default function Signup() {
               >
                 Sign in
               </button>
+            </div>
+            <div className="text-sm text-slate-500">
+              Don't have an account?{" "}
+              <Link className="underline" to="/signup">
+                Sign up
+              </Link>
+              .
             </div>
           </Form>
         </div>
