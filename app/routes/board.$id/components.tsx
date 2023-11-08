@@ -55,21 +55,35 @@ export function EditableText({
   let [edit, setEdit] = useState(false);
   let inputRef = useRef<HTMLInputElement>(null);
   let buttonRef = useRef<HTMLButtonElement>(null);
+  let lastAction = useRef<string>("none");
 
   if (fetcher.formData?.has(fieldName)) {
     value = String(fetcher.formData.get("name"));
   }
+
+  useLayoutEffect(() => {
+    switch (lastAction.current) {
+      case "submit":
+      case "escape": {
+        buttonRef.current?.focus();
+        break;
+      }
+      case "start-edit": {
+        inputRef.current?.focus();
+        break;
+      }
+    }
+    lastAction.current = "none";
+  });
 
   return edit ? (
     <fetcher.Form
       method="post"
       onSubmit={(event) => {
         event.preventDefault();
-        flushSync(() => {
-          fetcher.submit(event.currentTarget, { unstable_flushSync: true });
-          setEdit(false);
-        });
-        buttonRef.current?.focus();
+        lastAction.current = "submit";
+        setEdit(false);
+        fetcher.submit(event.currentTarget);
       }}
       onBlur={(event) => {
         if (inputRef.current?.value === value) {
@@ -89,10 +103,8 @@ export function EditableText({
         className={inputClassName}
         onKeyDown={(event) => {
           if (event.key === "Escape") {
-            flushSync(() => {
-              setEdit(false);
-            });
-            buttonRef.current?.focus();
+            lastAction.current = "escape";
+            setEdit(false);
           }
         }}
       />
@@ -102,10 +114,8 @@ export function EditableText({
       aria-label={buttonLabel}
       ref={buttonRef}
       onClick={() => {
-        flushSync(() => {
-          setEdit(true);
-        });
-        inputRef.current?.focus();
+        lastAction.current = "start-edit";
+        setEdit(true);
       }}
       type="button"
       className={buttonClassName}
