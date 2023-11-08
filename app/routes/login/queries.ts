@@ -3,12 +3,8 @@ import { prisma } from "~/db/prisma";
 
 export async function login(email: string, password: string) {
   let user = await prisma.account.findUnique({
-    where: {
-      email: email,
-    },
-    include: {
-      Password: true,
-    },
+    where: { email: email },
+    include: { Password: true },
   });
 
   if (!user || !user.Password) {

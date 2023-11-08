@@ -14,6 +14,13 @@ export async function getBoardData(boardId: number) {
   });
 }
 
+export async function updateBoardName(boardId: number, name: string) {
+  return prisma.board.update({
+    where: { id: boardId },
+    data: { name },
+  });
+}
+
 export function upsertItem(mutation: ItemMutation & { boardId: number }) {
   return prisma.item.upsert({
     where: { id: mutation.id },

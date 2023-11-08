@@ -13,6 +13,7 @@ import invariant from "tiny-invariant";
 import { NewCard } from "./new-card";
 import { flushSync } from "react-dom";
 import { Card } from "./card";
+import { EditableText } from "./components";
 
 interface ColumnProps {
   name: string;
@@ -75,7 +76,19 @@ export function Column({ name, columnId, items }: ColumnProps) {
         setAcceptDrop(false);
       }}
     >
-      <ColumnHeader name={name} columnId={columnId} />
+      <div className="p-2">
+        <EditableText
+          fieldName="name"
+          value={name}
+          inputLabel="Edit column name"
+          buttonLabel={`Edit column "${name}" name`}
+          inputClassName="border border-slate-400 w-full rounded-lg py-1 px-2 font-medium text-black"
+          buttonClassName="block rounded-lg text-left w-full border border-transparent py-1 px-2 font-medium text-slate-600"
+        >
+          <input type="hidden" name="intent" value={INTENTS.updateColumn} />
+          <input type="hidden" name="columnId" value={columnId} />
+        </EditableText>
+      </div>
 
       <ul ref={listRef} className="flex-grow overflow-auto">
         {items
@@ -120,84 +133,6 @@ export function Column({ name, columnId, items }: ColumnProps) {
             <Icon name="plus" /> Add a card
           </button>
         </div>
-      )}
-    </div>
-  );
-}
-
-interface ColumnHeaderProps {
-  name: string;
-  columnId: string;
-}
-
-function ColumnHeader({ name, columnId }: ColumnHeaderProps) {
-  let fetcher = useFetcher();
-  let [edit, setEdit] = useState(false);
-  let editNameRef = useRef<HTMLInputElement>(null);
-  let editNameButtonRef = useRef<HTMLButtonElement>(null);
-
-  // optimistic update
-  if (fetcher.formData?.has("name")) {
-    name = String(fetcher.formData.get("name"));
-  }
-
-  // manage focus
-  useEffect(() => {
-    if (document.activeElement !== document.body) {
-      return;
-    }
-    if (edit) {
-      editNameRef.current?.select();
-    } else {
-      editNameButtonRef.current?.focus();
-    }
-  }, [edit]);
-
-  // reset edit state whenever the fetcher starts a new request
-  useEffect(() => {
-    if (fetcher.state !== "idle") {
-      setEdit(false);
-    }
-  }, [fetcher]);
-
-  return (
-    <div className="p-2">
-      {edit ? (
-        <fetcher.Form
-          method="post"
-          onBlur={(event) => {
-            if (editNameRef.current?.value === "") {
-              setEdit(false);
-            } else {
-              fetcher.submit(event.currentTarget);
-            }
-          }}
-        >
-          <input type="hidden" name="intent" value={INTENTS.updateColumn} />
-          <input type="hidden" name="columnId" value={columnId} />
-          <input
-            ref={editNameRef}
-            type="text"
-            name="name"
-            defaultValue={name}
-            className="border border-slate-400 w-full rounded-lg py-1 px-2 font-medium text-black"
-            onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                setEdit(false);
-              }
-            }}
-          />
-        </fetcher.Form>
-      ) : (
-        <button
-          aria-label={`Edit column "${name}" name`}
-          ref={editNameButtonRef}
-          onClick={() => setEdit(true)}
-          type="button"
-          className="block rounded-lg text-left w-full border border-transparent py-1 px-2 font-medium text-slate-600"
-        >
-          {name || <span className="text-slate-400 italic">Add name</span>}
-        </button>
       )}
     </div>
   );

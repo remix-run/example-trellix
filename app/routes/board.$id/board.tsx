@@ -2,10 +2,11 @@ import { useRef } from "react";
 import invariant from "tiny-invariant";
 import { useFetchers, useLoaderData } from "@remix-run/react";
 
-import { type loader } from "./server";
+import { type loader } from "./route";
 import { INTENTS, type RenderedItem } from "./types";
 import { Column } from "./column";
 import { NewColumn } from "./new-column";
+import { EditableText } from "./components";
 
 export function Board() {
   let { board } = useLoaderData<typeof loader>();
@@ -52,7 +53,19 @@ export function Board() {
       ref={scrollContainerRef}
       style={{ backgroundColor: board.color }}
     >
-      <h1 className="px-8 my-4 text-2xl font-medium">{board.name}</h1>
+      <h1>
+        <EditableText
+          value={board.name}
+          fieldName="name"
+          inputClassName="mx-8 my-4 text-2xl font-medium border border-slate-400 rounded-lg py-1 px-2 text-black"
+          buttonClassName="mx-8 my-4 text-2xl font-medium block rounded-lg text-left border border-transparent py-1 px-2 text-slate-800"
+          buttonLabel={`Edit board "${board.name}" name`}
+          inputLabel="Edit board name"
+        >
+          <input type="hidden" name="intent" value={INTENTS.updateBoardName} />
+          <input type="hidden" name="id" value={board.id} />
+        </EditableText>
+      </h1>
 
       <div className="flex flex-grow min-h-0 h-full items-start gap-4 px-8 pb-4">
         {[...columns.values()].map((col) => {
@@ -77,6 +90,7 @@ export function Board() {
     </div>
   );
 }
+
 function useAddingColumns() {
   type CreateColumnFetcher = ReturnType<typeof useFetchers>[0] & {
     formData: FormData;
@@ -92,6 +106,7 @@ function useAddingColumns() {
       return { name, id };
     });
 }
+
 function usePendingItems() {
   type PendingItem = ReturnType<typeof useFetchers>[0] & {
     formData: FormData;

@@ -98,21 +98,3 @@ export function Card({
     </li>
   );
 }
-
-function useViewTransition() {
-  let [pending, setPending] = useState(false);
-  async function startTransition(fn: () => void) {
-    flushSync(() => {
-      setPending(true);
-    });
-    if (document.startViewTransition) {
-      let tn = document.startViewTransition(() => fn());
-      await tn.finished;
-      setPending(false);
-    } else {
-      fn();
-      setPending(false);
-    }
-  }
-  return [startTransition, pending] as const;
-}

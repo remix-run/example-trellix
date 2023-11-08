@@ -43,10 +43,10 @@ export default function App() {
       <body className="h-screen bg-slate-100 text-slate-900">
         <div className="h-full flex flex-col min-h-0">
           <div className="bg-slate-900 border-b border-slate-800 flex items-center justify-between py-4 px-8 box-border">
-            <div className="leading-3 w-1/3">
+            <Link to="/home" className="block leading-3 w-1/3">
               <div className="font-black text-2xl text-white">Trellix</div>
               <div className="text-slate-500">a Remix Demo</div>
-            </div>
+            </Link>
             <div className="flex items-center">
               <a
                 href="https://remix.run/docs"
