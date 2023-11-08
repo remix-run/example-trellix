@@ -42,7 +42,7 @@ export function Board() {
 
   let scrollContainerRef = useRef<HTMLDivElement>(null);
   function scrollRight() {
-    invariant(scrollContainerRef.current);
+    invariant(scrollContainerRef.current, "no scroll container");
     scrollContainerRef.current.scrollLeft =
       scrollContainerRef.current.scrollWidth;
   }

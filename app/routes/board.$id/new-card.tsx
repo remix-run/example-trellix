@@ -35,6 +35,7 @@ export function NewCard({
           method: "post",
           fetcherKey: `card:${id}`,
           navigate: false,
+          unstable_flushSync: true,
         });
 
         invariant(textAreaRef.current);

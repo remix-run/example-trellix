@@ -1,10 +1,4 @@
-import {
-  useState,
-  useRef,
-  useTransition,
-  useLayoutEffect,
-  useEffect,
-} from "react";
+import { useState, useRef } from "react";
 import { flushSync } from "react-dom";
 import invariant from "tiny-invariant";
 import { Icon } from "~/icons/icons";
@@ -23,25 +17,8 @@ export function NewColumn({
   editInitially: boolean;
 }) {
   let [editing, setEditing] = useState(editInitially);
-  let [startingAdd, startAdding] = useTransition();
   let inputRef = useRef<HTMLInputElement>(null);
   let submit = useSubmit();
-  let mounted = useRef(false);
-
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-
-  useLayoutEffect(() => {
-    if (mounted && editing && !startingAdd) {
-      onAdd();
-      invariant(inputRef.current, "missing input ref");
-      inputRef.current.value = "";
-    }
-  }, [editing, startingAdd]);
 
   return editing ? (
     <Form
@@ -52,9 +29,14 @@ export function NewColumn({
         event.preventDefault();
         let formData = new FormData(event.currentTarget);
         formData.set("id", crypto.randomUUID());
-        startAdding(() => {
-          submit(formData, { navigate: false, method: "post" });
+        submit(formData, {
+          navigate: false,
+          method: "post",
+          unstable_flushSync: true,
         });
+        onAdd();
+        invariant(inputRef.current, "missing input ref");
+        inputRef.current.value = "";
       }}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
@@ -66,6 +48,7 @@ export function NewColumn({
       <input type="hidden" name="boardId" value={boardId} />
       <input
         autoFocus
+        required
         ref={inputRef}
         type="text"
         name="name"

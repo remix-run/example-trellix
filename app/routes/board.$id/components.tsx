@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { flushSync, unstable_batchedUpdates } from "react-dom";
 
 export let SaveButton = forwardRef<
   HTMLButtonElement,
@@ -28,6 +27,7 @@ export let CancelButton = forwardRef<
   return (
     <button
       ref={ref}
+      type="button"
       {...props}
       className="text-sm rounded-lg text-left p-2 font-medium hover:bg-slate-200 focus:bg-slate-200"
     />
@@ -55,8 +55,9 @@ export function EditableText({
   let [edit, setEdit] = useState(false);
   let inputRef = useRef<HTMLInputElement>(null);
   let buttonRef = useRef<HTMLButtonElement>(null);
-  let lastAction = useRef<string>("none");
+  let lastAction = useRef<"click" | "escape" | "submit" | "none">("none");
 
+  // optimistic update
   if (fetcher.formData?.has(fieldName)) {
     value = String(fetcher.formData.get("name"));
   }
@@ -68,29 +69,20 @@ export function EditableText({
         buttonRef.current?.focus();
         break;
       }
-      case "start-edit": {
-        inputRef.current?.focus();
+      case "click": {
+        inputRef.current?.select();
         break;
       }
     }
     lastAction.current = "none";
-  });
+  }, [edit]);
 
   return edit ? (
     <fetcher.Form
       method="post"
-      onSubmit={(event) => {
-        event.preventDefault();
+      onSubmit={() => {
         lastAction.current = "submit";
         setEdit(false);
-        fetcher.submit(event.currentTarget);
-      }}
-      onBlur={(event) => {
-        if (inputRef.current?.value === value) {
-          setEdit(false);
-        } else {
-          fetcher.submit(event.currentTarget);
-        }
       }}
     >
       {children}
@@ -107,17 +99,23 @@ export function EditableText({
             setEdit(false);
           }
         }}
+        onBlur={(event) => {
+          if (inputRef.current?.value !== value) {
+            fetcher.submit(event.currentTarget);
+          }
+          setEdit(false);
+        }}
       />
     </fetcher.Form>
   ) : (
     <button
       aria-label={buttonLabel}
+      type="button"
       ref={buttonRef}
       onClick={() => {
-        lastAction.current = "start-edit";
+        lastAction.current = "click";
         setEdit(true);
       }}
-      type="button"
       className={buttonClassName}
     >
       {value || <span className="text-slate-400 italic">Edit</span>}
