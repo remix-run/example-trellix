@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { flushSync, unstable_batchedUpdates } from "react-dom";
 
 export let SaveButton = forwardRef<
   HTMLButtonElement,
@@ -54,42 +55,22 @@ export function EditableText({
   let [edit, setEdit] = useState(false);
   let inputRef = useRef<HTMLInputElement>(null);
   let buttonRef = useRef<HTMLButtonElement>(null);
-  let mounted = useRef(false);
 
-  // optimistic update
   if (fetcher.formData?.has(fieldName)) {
     value = String(fetcher.formData.get("name"));
   }
 
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-
-  // manage focus
-  useLayoutEffect(() => {
-    if (!mounted.current) return;
-    if (edit) {
-      console.log("focus input");
-      inputRef.current?.select();
-    } else {
-      console.log("focus button");
-      buttonRef.current?.focus();
-    }
-  }, [edit]);
-
-  // reset edit state whenever the fetcher starts a new request
-  useLayoutEffect(() => {
-    if (fetcher.state !== "idle") {
-      setEdit(false);
-    }
-  }, [fetcher]);
-
   return edit ? (
     <fetcher.Form
       method="post"
+      onSubmit={(event) => {
+        event.preventDefault();
+        flushSync(() => {
+          fetcher.submit(event.currentTarget, { unstable_flushSync: true });
+          setEdit(false);
+        });
+        buttonRef.current?.focus();
+      }}
       onBlur={(event) => {
         if (inputRef.current?.value === value) {
           setEdit(false);
@@ -108,7 +89,10 @@ export function EditableText({
         className={inputClassName}
         onKeyDown={(event) => {
           if (event.key === "Escape") {
-            setEdit(false);
+            flushSync(() => {
+              setEdit(false);
+            });
+            buttonRef.current?.focus();
           }
         }}
       />
@@ -117,7 +101,12 @@ export function EditableText({
     <button
       aria-label={buttonLabel}
       ref={buttonRef}
-      onClick={() => setEdit(true)}
+      onClick={() => {
+        flushSync(() => {
+          setEdit(true);
+        });
+        inputRef.current?.focus();
+      }}
       type="button"
       className={buttonClassName}
     >
