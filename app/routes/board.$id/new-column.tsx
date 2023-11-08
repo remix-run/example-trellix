@@ -1,4 +1,10 @@
-import { useState, useRef } from "react";
+import {
+  useState,
+  useRef,
+  useTransition,
+  useLayoutEffect,
+  useEffect,
+} from "react";
 import { flushSync } from "react-dom";
 import invariant from "tiny-invariant";
 import { Icon } from "~/icons/icons";
@@ -16,11 +22,28 @@ export function NewColumn({
   onAdd: () => void;
   editInitially: boolean;
 }) {
-  let [edit, setEdit] = useState(editInitially);
+  let [editing, setEditing] = useState(editInitially);
+  let [startingAdd, startAdding] = useTransition();
   let inputRef = useRef<HTMLInputElement>(null);
   let submit = useSubmit();
+  let mounted = useRef(false);
 
-  return edit ? (
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (mounted && editing && !startingAdd) {
+      onAdd();
+      invariant(inputRef.current, "missing input ref");
+      inputRef.current.value = "";
+    }
+  }, [editing, startingAdd]);
+
+  return editing ? (
     <Form
       method="post"
       navigate={false}
@@ -29,14 +52,13 @@ export function NewColumn({
         event.preventDefault();
         let formData = new FormData(event.currentTarget);
         formData.set("id", crypto.randomUUID());
-        submit(formData, { navigate: false, method: "post" });
-        onAdd();
-        invariant(inputRef.current, "missing input ref");
-        inputRef.current.value = "";
+        startAdding(() => {
+          submit(formData, { navigate: false, method: "post" });
+        });
       }}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
-          setEdit(false);
+          setEditing(false);
         }
       }}
     >
@@ -51,14 +73,14 @@ export function NewColumn({
       />
       <div className="flex justify-between">
         <SaveButton>Save Column</SaveButton>
-        <CancelButton onClick={() => setEdit(false)}>Cancel</CancelButton>
+        <CancelButton onClick={() => setEditing(false)}>Cancel</CancelButton>
       </div>
     </Form>
   ) : (
     <button
       onClick={() => {
         flushSync(() => {
-          setEdit(true);
+          setEditing(true);
         });
         onAdd();
       }}
