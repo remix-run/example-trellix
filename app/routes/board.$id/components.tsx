@@ -5,7 +5,6 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  useTransition,
 } from "react";
 
 export let SaveButton = forwardRef<
@@ -51,71 +50,51 @@ export function EditableText({
   buttonClassName: string;
   buttonLabel: string;
 }) {
-  let mounted = useRef(false);
   let fetcher = useFetcher();
-  let [editing, setEditing] = useState(false);
-  let [stoppingEdit, stopEditing] = useTransition();
-  let [startingEdit, startEditing] = useTransition();
+  let [edit, setEdit] = useState(false);
   let inputRef = useRef<HTMLInputElement>(null);
   let buttonRef = useRef<HTMLButtonElement>(null);
+  let mounted = useRef(false);
 
   // optimistic update
   if (fetcher.formData?.has(fieldName)) {
     value = String(fetcher.formData.get("name"));
   }
 
-  function stopEdit() {
-    stopEditing(() => {
-      setEditing(false);
-    });
-  }
-
-  function startEdit() {
-    startEditing(() => {
-      setEditing(true);
-    });
-  }
-
   useEffect(() => {
-    console.log("mount effect");
     mounted.current = true;
     return () => {
       mounted.current = false;
     };
   }, []);
 
+  // manage focus
   useLayoutEffect(() => {
-    console.log("stop effect", { stoppingEdit, editing });
     if (!mounted.current) return;
-    if (!stoppingEdit && !editing) {
+    if (edit) {
+      console.log("focus input");
+      inputRef.current?.select();
+    } else {
       console.log("focus button");
       buttonRef.current?.focus();
     }
-  }, [stoppingEdit, editing]);
-
-  useLayoutEffect(() => {
-    console.log("start effect", { startingEdit, editing });
-    if (!mounted.current) return;
-    if (!startingEdit && editing) {
-      console.log("focus input");
-      inputRef.current?.focus();
-    }
-  }, [startingEdit, editing]);
+  }, [edit]);
 
   // reset edit state whenever the fetcher starts a new request
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (fetcher.state !== "idle") {
-      stopEdit();
+      setEdit(false);
     }
   }, [fetcher]);
 
-  return editing ? (
+  return edit ? (
     <fetcher.Form
       method="post"
-      onSubmit={(event) => {
+      onBlur={(event) => {
         if (inputRef.current?.value === value) {
-          event.preventDefault();
-          stopEdit();
+          setEdit(false);
+        } else {
+          fetcher.submit(event.currentTarget);
         }
       }}
     >
@@ -129,15 +108,7 @@ export function EditableText({
         className={inputClassName}
         onKeyDown={(event) => {
           if (event.key === "Escape") {
-            stopEdit();
-          }
-        }}
-        onBlur={(event) => {
-          console.log("blur", value);
-          if (inputRef.current?.value === value) {
-            stopEdit();
-          } else {
-            fetcher.submit(event.currentTarget.form);
+            setEdit(false);
           }
         }}
       />
@@ -146,7 +117,7 @@ export function EditableText({
     <button
       aria-label={buttonLabel}
       ref={buttonRef}
-      onClick={() => startEdit()}
+      onClick={() => setEdit(true)}
       type="button"
       className={buttonClassName}
     >
