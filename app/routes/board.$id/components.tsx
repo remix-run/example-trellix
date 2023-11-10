@@ -1,11 +1,6 @@
 import { useFetcher } from "@remix-run/react";
-import {
-  forwardRef,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 export let SaveButton = forwardRef<
   HTMLButtonElement,
@@ -55,34 +50,20 @@ export function EditableText({
   let [edit, setEdit] = useState(false);
   let inputRef = useRef<HTMLInputElement>(null);
   let buttonRef = useRef<HTMLButtonElement>(null);
-  let lastAction = useRef<"click" | "escape" | "submit" | "none">("none");
 
   // optimistic update
   if (fetcher.formData?.has(fieldName)) {
     value = String(fetcher.formData.get("name"));
   }
 
-  useLayoutEffect(() => {
-    switch (lastAction.current) {
-      case "submit":
-      case "escape": {
-        buttonRef.current?.focus();
-        break;
-      }
-      case "click": {
-        inputRef.current?.select();
-        break;
-      }
-    }
-    lastAction.current = "none";
-  }, [edit]);
-
   return edit ? (
     <fetcher.Form
       method="post"
       onSubmit={() => {
-        lastAction.current = "submit";
-        setEdit(false);
+        flushSync(() => {
+          setEdit(false);
+        });
+        buttonRef.current?.focus();
       }}
     >
       {children}
@@ -95,8 +76,10 @@ export function EditableText({
         className={inputClassName}
         onKeyDown={(event) => {
           if (event.key === "Escape") {
-            lastAction.current = "escape";
-            setEdit(false);
+            flushSync(() => {
+              setEdit(false);
+            });
+            buttonRef.current?.focus();
           }
         }}
         onBlur={(event) => {
@@ -113,8 +96,10 @@ export function EditableText({
       type="button"
       ref={buttonRef}
       onClick={() => {
-        lastAction.current = "click";
-        setEdit(true);
+        flushSync(() => {
+          setEdit(true);
+        });
+        inputRef.current?.select();
       }}
       className={buttonClassName}
     >

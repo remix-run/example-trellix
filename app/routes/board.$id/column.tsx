@@ -107,18 +107,15 @@ export function Column({ name, columnId, items }: ColumnProps) {
               }
             />
           ))}
-
-        {edit && (
-          <NewCard
-            columnId={columnId}
-            nextOrder={items.length}
-            onAddCard={() => scrollList()}
-            onComplete={() => setEdit(false)}
-          />
-        )}
       </ul>
-
-      {!edit && (
+      {edit ? (
+        <NewCard
+          columnId={columnId}
+          nextOrder={items.length}
+          onAddCard={() => scrollList()}
+          onComplete={() => setEdit(false)}
+        />
+      ) : (
         <div className="p-2">
           <button
             type="button"
