@@ -13,6 +13,7 @@ import {
   getBoardData,
   upsertItem,
   updateBoardName,
+  deleteCard,
 } from "./queries";
 import { Board } from "./board";
 
@@ -44,6 +45,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (!intent) throw badRequest("Missing intent");
 
   switch (intent) {
+    case INTENTS.deleteCard: {
+      let id = String(formData.get("itemId"));
+      await deleteCard(id);
+      break;
+    }
     case INTENTS.updateBoardName: {
       let name = String(formData.get("name"));
       invariant(name, "Missing name");

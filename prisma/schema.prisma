@@ -42,7 +42,7 @@ model Column {
   name    String
   order   Float  @default(0)
   items   Item[]
-  Board   Board  @relation(fields: [boardId], references: [id])
+  Board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
   boardId Int
 }
 
@@ -56,9 +56,9 @@ model Item {
   // will be 1.75, etc.
   order Float
 
-  Column   Column @relation(fields: [columnId], references: [id])
+  Column   Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
   columnId String
 
-  Board   Board @relation(fields: [boardId], references: [id])
+  Board   Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
   boardId Int
 }

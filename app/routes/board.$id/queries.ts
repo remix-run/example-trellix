@@ -2,6 +2,10 @@ import { prisma } from "~/db/prisma";
 
 import { ItemMutation } from "./types";
 
+export function deleteCard(id: string) {
+  return prisma.item.delete({ where: { id } });
+}
+
 export async function getBoardData(boardId: number) {
   return prisma.board.findUnique({
     where: {

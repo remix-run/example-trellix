@@ -1,5 +1,11 @@
 import { prisma } from "~/db/prisma";
 
+export async function deleteBoard(boardId: number) {
+  return prisma.board.delete({
+    where: { id: boardId },
+  });
+}
+
 export async function createBoard(userId: string, name: string, color: string) {
   return prisma.board.create({
     data: {

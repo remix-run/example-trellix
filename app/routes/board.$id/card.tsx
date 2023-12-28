@@ -1,9 +1,9 @@
-import { flushSync } from "react-dom";
 import invariant from "tiny-invariant";
-import { useSubmit } from "@remix-run/react";
+import { useFetcher, useSubmit } from "@remix-run/react";
 import { useState } from "react";
 
 import { ItemMutation, INTENTS, CONTENT_TYPES } from "./types";
+import { Icon } from "~/icons/icons";
 
 interface CardProps {
   title: string;
@@ -25,10 +25,11 @@ export function Card({
   previousOrder,
 }: CardProps) {
   let submit = useSubmit();
+  let deleteFetcher = useFetcher();
 
   let [acceptDrop, setAcceptDrop] = useState<"none" | "top" | "bottom">("none");
 
-  return (
+  return deleteFetcher.state !== "idle" ? null : (
     <li
       onDragOver={(event) => {
         if (event.dataTransfer.types.includes(CONTENT_TYPES.card)) {
@@ -83,7 +84,7 @@ export function Card({
     >
       <div
         draggable
-        className="bg-white shadow shadow-slate-300 border-slate-300 text-sm rounded-lg w-full py-1 px-2"
+        className="bg-white shadow shadow-slate-300 border-slate-300 text-sm rounded-lg w-full py-1 px-2 relative"
         onDragStart={(event) => {
           event.dataTransfer.effectAllowed = "move";
           event.dataTransfer.setData(
@@ -94,6 +95,20 @@ export function Card({
       >
         <h3>{title}</h3>
         <div className="mt-2">{content || <>&nbsp;</>}</div>
+        <deleteFetcher.Form method="post">
+          <input type="hidden" name="intent" value={INTENTS.deleteCard} />
+          <input type="hidden" name="itemId" value={id} />
+          <button
+            aria-label="Delete card"
+            className="absolute top-4 right-4 hover:text-brand-red"
+            type="submit"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <Icon name="trash" />
+          </button>
+        </deleteFetcher.Form>
       </div>
     </li>
   );

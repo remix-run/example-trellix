@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { useFetcher, useSubmit } from "@remix-run/react";
+import { useState, useRef } from "react";
+import { useSubmit } from "@remix-run/react";
 
 import { Icon } from "~/icons/icons";
 
@@ -33,8 +33,6 @@ export function Column({ name, columnId, items }: ColumnProps) {
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }
 
-  let isEmpty = items.length === 0;
-
   return (
     <div
       className={
@@ -42,7 +40,10 @@ export function Column({ name, columnId, items }: ColumnProps) {
         (acceptDrop ? `outline outline-2 outline-brand-red` : ``)
       }
       onDragOver={(event) => {
-        if (isEmpty && event.dataTransfer.types.includes(CONTENT_TYPES.card)) {
+        if (
+          items.length === 0 &&
+          event.dataTransfer.types.includes(CONTENT_TYPES.card)
+        ) {
           event.preventDefault();
           setAcceptDrop(true);
         }
@@ -111,7 +112,7 @@ export function Column({ name, columnId, items }: ColumnProps) {
       {edit ? (
         <NewCard
           columnId={columnId}
-          nextOrder={items.length}
+          nextOrder={items.length === 0 ? 1 : items[items.length - 1].order + 1}
           onAddCard={() => scrollList()}
           onComplete={() => setEdit(false)}
         />

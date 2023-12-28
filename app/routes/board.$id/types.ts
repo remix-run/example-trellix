@@ -18,6 +18,9 @@ export const INTENTS = {
   moveItem: "moveItem" as const,
   moveColumn: "moveColumn" as const,
   updateBoardName: "updateBoardName" as const,
+  deleteBoard: "deleteBoard" as const,
+  createBoard: "createBoard" as const,
+  deleteCard: "deleteCard" as const,
 };
 
 export const ItemMutationFields = {
