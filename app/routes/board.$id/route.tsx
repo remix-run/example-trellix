@@ -18,12 +18,12 @@ import {
 import { Board } from "./board";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  await requireAuthCookie(request);
+  let userId = await requireAuthCookie(request);
 
   invariant(params.id, "Missing board ID");
   let id = Number(params.id);
 
-  let board = await getBoardData(id);
+  let board = await getBoardData(userId, id);
   if (!board) throw notFound();
 
   return { board };

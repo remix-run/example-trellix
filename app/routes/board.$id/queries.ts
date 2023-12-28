@@ -6,10 +6,11 @@ export function deleteCard(id: string) {
   return prisma.item.delete({ where: { id } });
 }
 
-export async function getBoardData(boardId: number) {
+export async function getBoardData(userId: string, boardId: number) {
   return prisma.board.findUnique({
     where: {
       id: boardId,
+      accountId: userId,
     },
     include: {
       items: true,
