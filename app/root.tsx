@@ -47,52 +47,22 @@ export default function App() {
               <div className="font-black text-2xl text-white">Trellix</div>
               <div className="text-slate-500">a Remix Demo</div>
             </Link>
-            <div className="flex items-center">
-              <a
-                href="https://remix.run/docs"
-                className="flex-1 block text-center w-20"
-              >
-                <img
-                  src="/yt_icon_mono_dark.png"
-                  alt="YouTube Logo"
-                  className="inline-block h-8"
-                />
-                <br />
-                <a
-                  href="https://www.youtube.com/watch?v=RTHzZVbTl6c&list=PLXoynULbYuED9b2k5LS44v9TQjfXifwNu&pp=gAQBiAQB"
-                  className="text-slate-500 text-xs uppercase font-bold"
-                >
-                  Videos
-                </a>
-              </a>
-              <a
+            <div className="flex items-center gap-6">
+              <IconLink
+                href="https://www.youtube.com/watch?v=RTHzZVbTl6c&list=PLXoynULbYuED9b2k5LS44v9TQjfXifwNu&pp=gAQBiAQB"
+                icon="/yt_icon_mono_dark.png"
+                label="Videos"
+              />
+              <IconLink
                 href="https://github.com/remix-run/example-trellix"
-                className="block text-center flex-1 w-20"
-              >
-                <img
-                  src="/github-mark-white.png"
-                  alt="GitHub Octocat Logo: A cat with an octopus tentacle arm"
-                  className="inline-block h-8"
-                />
-                <br />
-                <span className="text-slate-500 text-xs uppercase font-bold">
-                  Source
-                </span>
-              </a>
-              <a
+                label="Source"
+                icon="/github-mark-white.png"
+              />
+              <IconLink
                 href="https://remix.run/docs/en/main"
-                className="block text-center flex-1 w-20"
-              >
-                <img
-                  src="/r.png"
-                  alt="Remix Logo"
-                  className="inline-block h-8"
-                />
-                <br />
-                <span className="text-slate-500 text-xs uppercase font-bold">
-                  Docs
-                </span>
-              </a>
+                icon="/r.png"
+                label="Docs"
+              />
             </div>
             <div className="w-1/3 flex justify-end">
               {userId ? (
@@ -127,5 +97,25 @@ export default function App() {
         <Scripts />
       </body>
     </html>
+  );
+}
+
+function IconLink({
+  icon,
+  href,
+  label,
+}: {
+  icon: string;
+  href: string;
+  label: string;
+}) {
+  return (
+    <a
+      href={href}
+      className="text-slate-500 text-xs uppercase font-bold text-center"
+    >
+      <img src={icon} aria-hidden className="inline-block h-8" />
+      <span className="block mt-2">{label}</span>
+    </a>
   );
 }
