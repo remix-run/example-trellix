@@ -2,8 +2,9 @@ import invariant from "tiny-invariant";
 import { useFetcher, useSubmit } from "@remix-run/react";
 import { useState } from "react";
 
-import { ItemMutation, INTENTS, CONTENT_TYPES } from "./types";
 import { Icon } from "~/icons/icons";
+
+import { ItemMutation, INTENTS, CONTENT_TYPES } from "./types";
 
 interface CardProps {
   title: string;

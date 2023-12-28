@@ -2,7 +2,7 @@ import { type MetaFunction } from "@remix-run/node";
 import invariant from "tiny-invariant";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 
-import { badRequest, notFound } from "~/http/bad-response";
+import { badRequest, notFound } from "~/http/bad-request";
 import { requireAuthCookie } from "~/auth/auth";
 
 import { parseItemMutation } from "./utils";
@@ -20,8 +20,8 @@ import { Board } from "./board";
 export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireAuthCookie(request);
 
+  invariant(params.id, "Missing board ID");
   let id = Number(params.id);
-  invariant(id, "Missing board ID");
 
   let board = await getBoardData(id);
   if (!board) throw notFound();
@@ -46,12 +46,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   switch (intent) {
     case INTENTS.deleteCard: {
-      let id = String(formData.get("itemId"));
+      let id = String(formData.get("itemId") || "");
       await deleteCard(id);
       break;
     }
     case INTENTS.updateBoardName: {
-      let name = String(formData.get("name"));
+      let name = String(formData.get("name") || "");
       invariant(name, "Missing name");
       await updateBoardName(boardId, name);
       break;
@@ -76,7 +76,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       break;
     }
     default: {
-      throw new Error("Unknown intent");
+      throw badRequest(`Unknown intent: ${intent}`);
     }
   }
 

@@ -17,8 +17,8 @@ export const meta = () => {
 export async function action({ request }: ActionFunctionArgs) {
   let formData = await request.formData();
 
-  let email = String(formData.get("email"));
-  let password = String(formData.get("password"));
+  let email = String(formData.get("email") || "");
+  let password = String(formData.get("password") || "");
 
   let errors = await validate(email, password);
   if (errors) {

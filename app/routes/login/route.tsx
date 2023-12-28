@@ -16,8 +16,8 @@ export const meta = () => {
 
 export async function action({ request }: DataFunctionArgs) {
   let formData = await request.formData();
-  let email = String(formData.get("email"));
-  let password = String(formData.get("password"));
+  let email = String(formData.get("email") || "");
+  let password = String(formData.get("password") || "");
 
   let errors = validate(email, password);
   if (errors) {
@@ -32,7 +32,8 @@ export async function action({ request }: DataFunctionArgs) {
     );
   }
 
-  return setAuthOnResponse(redirect("/home"), userId);
+  let response = redirect("/home");
+  return setAuthOnResponse(response, userId);
 }
 
 export default function Signup() {

@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useSubmit } from "@remix-run/react";
+import invariant from "tiny-invariant";
 
 import { Icon } from "~/icons/icons";
 
@@ -9,7 +10,6 @@ import {
   CONTENT_TYPES,
   type RenderedItem,
 } from "./types";
-import invariant from "tiny-invariant";
 import { NewCard } from "./new-card";
 import { flushSync } from "react-dom";
 import { Card } from "./card";
@@ -70,6 +70,8 @@ export function Column({ name, columnId, items }: ColumnProps) {
           {
             method: "post",
             navigate: false,
+            // use the same fetcher instance for any mutations on this card so
+            // that interruptions cancel the earlier request and revalidation
             fetcherKey: `card:${transfer.id}`,
           },
         );

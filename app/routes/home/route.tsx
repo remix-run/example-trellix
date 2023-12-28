@@ -2,6 +2,7 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   redirect,
+  broadcastDevReady,
 } from "@remix-run/node";
 import {
   Form,
@@ -14,7 +15,7 @@ import {
 import { requireAuthCookie } from "~/auth/auth";
 import { Button } from "~/components/button";
 import { Label, LabeledInput } from "~/components/input";
-import { badRequest } from "~/http/bad-response";
+import { badRequest } from "~/http/bad-request";
 
 import { getHomeData, createBoard, deleteBoard } from "./queries";
 import { INTENTS } from "../board.$id/types";
@@ -36,16 +37,20 @@ export async function action({ request }: ActionFunctionArgs) {
   let intent = String(formData.get("intent"));
   switch (intent) {
     case INTENTS.createBoard: {
-      let name = String(formData.get("name"));
-      let color = String(formData.get("color"));
+      let name = String(formData.get("name") || "");
+      let color = String(formData.get("color") || "");
       if (!name) throw badRequest("Bad request");
       let board = await createBoard(userId, name, color);
       return redirect(`/board/${board.id}`);
     }
     case INTENTS.deleteBoard: {
-      let boardId = Number(formData.get("boardId"));
-      await deleteBoard(boardId);
+      let boardId = formData.get("boardId");
+      if (!boardId) throw badRequest("Missing boardId");
+      await deleteBoard(Number(boardId));
       return { ok: true };
+    }
+    default: {
+      throw badRequest(`Unknown intent: ${intent}`);
     }
   }
 }

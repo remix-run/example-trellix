@@ -58,9 +58,12 @@ export default function App() {
                   className="inline-block h-8"
                 />
                 <br />
-                <span className="text-slate-500 text-xs uppercase font-bold">
+                <a
+                  href="https://www.youtube.com/watch?v=RTHzZVbTl6c&list=PLXoynULbYuED9b2k5LS44v9TQjfXifwNu&pp=gAQBiAQB"
+                  className="text-slate-500 text-xs uppercase font-bold"
+                >
                   Videos
-                </span>
+                </a>
               </a>
               <a
                 href="https://github.com/remix-run/example-trellix"

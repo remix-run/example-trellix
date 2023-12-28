@@ -24,13 +24,15 @@ export function Board() {
   }
 
   // merge pending and existing columns
-  let optAddingColumns = useAddingColumns();
-  type Column = (typeof board.columns)[0] | (typeof optAddingColumns)[0];
+  let optAddingColumns = usePendingColumns();
+  type Column =
+    | (typeof board.columns)[number]
+    | (typeof optAddingColumns)[number];
   type ColumnWithItems = Column & { items: typeof board.items };
-  let columns = [...board.columns, ...optAddingColumns].reduce(
-    (map, column) => map.set(String(column.id), { ...column, items: [] }),
-    new Map<string, ColumnWithItems>(),
-  );
+  let columns = new Map<string, ColumnWithItems>();
+  for (let column of [...board.columns, ...optAddingColumns]) {
+    columns.set(column.id, { ...column, items: [] });
+  }
 
   // add items to their columns
   for (let item of itemsById.values()) {
@@ -40,6 +42,7 @@ export function Board() {
     column.items.push(item);
   }
 
+  // scroll right when new columns are added
   let scrollContainerRef = useRef<HTMLDivElement>(null);
   function scrollRight() {
     invariant(scrollContainerRef.current, "no scroll container");
@@ -85,14 +88,17 @@ export function Board() {
           editInitially={board.columns.length === 0}
         />
 
-        <div data-lol-shutup className="w-8 h-1 flex-shrink-0" />
+        {/* trolling you to add some extra margin to the right of the container with a whole dang div */}
+        <div data-lol className="w-8 h-1 flex-shrink-0" />
       </div>
     </div>
   );
 }
 
-function useAddingColumns() {
-  type CreateColumnFetcher = ReturnType<typeof useFetchers>[0] & {
+// These are the inflight columns that are being created, instead of managing
+// state ourselves, we just ask Remix for the state
+function usePendingColumns() {
+  type CreateColumnFetcher = ReturnType<typeof useFetchers>[number] & {
     formData: FormData;
   };
 
@@ -107,6 +113,8 @@ function useAddingColumns() {
     });
 }
 
+// These are the inflight items that are being created or moved, instead of
+// managing state ourselves, we just ask Remix for the state
 function usePendingItems() {
   type PendingItem = ReturnType<typeof useFetchers>[0] & {
     formData: FormData;
