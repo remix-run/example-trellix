@@ -13,7 +13,10 @@ export default function Index() {
         <p>
           This is a demo app to show off the features of Remix and teach them
           through some videos we've published on{" "}
-          <a href="#TODO" className="underline">
+          <a
+            href="https://www.youtube.com/watch?v=RTHzZVbTl6c&list=PLXoynULbYuED9b2k5LS44v9TQjfXifwNu&pp=gAQBiAQB"
+            className="underline"
+          >
             YouTube
           </a>
           .
