@@ -1,8 +1,8 @@
 import { prisma } from "~/db/prisma";
 
-export async function deleteBoard(boardId: number) {
+export async function deleteBoard(boardId: number, accountId: string) {
   return prisma.board.delete({
-    where: { id: boardId },
+    where: { id: boardId, accountId },
   });
 }
 

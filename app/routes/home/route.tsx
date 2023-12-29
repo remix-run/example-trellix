@@ -32,7 +32,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  let userId = await requireAuthCookie(request);
+  let accountId = await requireAuthCookie(request);
   let formData = await request.formData();
   let intent = String(formData.get("intent"));
   switch (intent) {
@@ -40,13 +40,13 @@ export async function action({ request }: ActionFunctionArgs) {
       let name = String(formData.get("name") || "");
       let color = String(formData.get("color") || "");
       if (!name) throw badRequest("Bad request");
-      let board = await createBoard(userId, name, color);
+      let board = await createBoard(accountId, name, color);
       return redirect(`/board/${board.id}`);
     }
     case INTENTS.deleteBoard: {
       let boardId = formData.get("boardId");
       if (!boardId) throw badRequest("Missing boardId");
-      await deleteBoard(Number(boardId));
+      await deleteBoard(Number(boardId), accountId);
       return { ok: true };
     }
     default: {
