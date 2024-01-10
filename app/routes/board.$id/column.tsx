@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useSubmit } from "@remix-run/react";
+import { useFetcher, useSubmit } from "@remix-run/react";
 import invariant from "tiny-invariant";
 
 import { Icon } from "~/icons/icons";
@@ -23,6 +23,7 @@ interface ColumnProps {
 
 export function Column({ name, columnId, items }: ColumnProps) {
   let submit = useSubmit();
+  let deleteFetcher = useFetcher();
 
   let [acceptDrop, setAcceptDrop] = useState(false);
   let [edit, setEdit] = useState(false);
@@ -79,18 +80,46 @@ export function Column({ name, columnId, items }: ColumnProps) {
         setAcceptDrop(false);
       }}
     >
-      <div className="p-2">
-        <EditableText
-          fieldName="name"
-          value={name}
-          inputLabel="Edit column name"
-          buttonLabel={`Edit column "${name}" name`}
-          inputClassName="border border-slate-400 w-full rounded-lg py-1 px-2 font-medium text-black"
-          buttonClassName="block rounded-lg text-left w-full border border-transparent py-1 px-2 font-medium text-slate-600"
+      <div className="p-2 flex place-items-center gap-2">
+        <div className="w-full">
+          <EditableText
+            fieldName="name"
+            value={name}
+            inputLabel="Edit column name"
+            buttonLabel={`Edit column "${name}" name`}
+            inputClassName="border border-slate-400 w-full rounded-lg py-1 px-2 font-medium text-black"
+            buttonClassName="block rounded-lg text-left w-full border border-transparent py-1 px-2 font-medium text-slate-600"
+          >
+            <input type="hidden" name="intent" value={INTENTS.updateColumn} />
+            <input type="hidden" name="columnId" value={columnId} />
+          </EditableText>
+        </div>
+        <deleteFetcher.Form
+          method="post"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (
+              window.confirm(
+                "Are you sure you want to delete this column? This will delete all cards in this column.",
+              )
+            ) {
+              event.currentTarget.submit();
+            }
+          }}
         >
-          <input type="hidden" name="intent" value={INTENTS.updateColumn} />
+          <input type="hidden" name="intent" value={INTENTS.deleteColumn} />
           <input type="hidden" name="columnId" value={columnId} />
-        </EditableText>
+          <button
+            aria-label="Delete column"
+            className="hover:text-brand-red w-12 h-8 rounded-full"
+            type="submit"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <Icon name="trash" />
+          </button>
+        </deleteFetcher.Form>
       </div>
 
       <ul ref={listRef} className="flex-grow overflow-auto">
