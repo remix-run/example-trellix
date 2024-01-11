@@ -1,0 +1,36 @@
+---
+import LabeledInput from '../components/LabledInput.astro'
+import Label from './Label.astro'
+---
+
+<form method='post' target='/home' hx-post='/home' class='p-8 max-w-md'>
+    <input type='hidden' name='intent' value='createBoard' />
+    <div>
+        <h2 class='font-bold mb-2 text-xl'>New Board</h2>
+        <LabeledInput
+            id='Name'
+            label='Name'
+            name='name'
+            type='text'
+            required={true}
+        />
+    </div>
+
+    <div class='mt-4 flex items-center gap-4'>
+        <div class='flex items-center gap-1'>
+            <Label htmlFor='board-color'>Color</Label>
+            <input
+                id='board-color'
+                name='color'
+                type='color'
+                value='#cbd5e1'
+                class='bg-transparent'
+                required
+            />
+        </div>
+        <button
+            class='flex w-full justify-center rounded-md bg-brand-blue px-1 py-1 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue'
+            type='submit'>{false ? 'Creating...' : 'Create'}</button
+        >
+    </div>
+</form>

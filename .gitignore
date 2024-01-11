@@ -21,3 +21,6 @@ pnpm-debug.log*
 .DS_Store
 
 old/
+
+/prisma/dev.db
+/prisma/dev.db-journal

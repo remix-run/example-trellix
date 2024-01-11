@@ -1,0 +1,26 @@
+---
+import Boards from '../components/Boards.astro'
+import NewBoard from '../components/NewBoard.astro'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+if (!Astro.locals.userId) {
+    return Astro.redirect('/login')
+}
+
+const htmx = !!Astro.request.headers.get('HX-Request')
+const isPost = Astro.request.method === 'POST'
+const isDelete = Astro.request.method === 'DELETE'
+
+if (isPost) {
+}
+
+if (!isDelete) {
+}
+---
+
+<BaseLayout title='Home'>
+    <div class='h-full'>
+        <NewBoard />
+        <Boards />
+    </div>
+</BaseLayout>

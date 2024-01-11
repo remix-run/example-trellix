@@ -1,16 +1,53 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro'
 
+if (Astro.locals.userId) {
+    return Astro.redirect('/home')
+}
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title='Home'>
+    <div class='h-full flex flex-col items-center pt-20 bg-slate-900'>
+        <img
+            src='https://raw.githubusercontent.com/bigskysoftware/htmx/master/www/static/img/htmx_logo.1.png'
+            width='402'
+            height='149'
+        />
+        <div class='space-y-4 max-w-md text-lg text-slate-300'>
+            <p>
+                This is a demo app to show off the features of HTMX. Learn HTMX
+                from a video by fireship{' '}
+                <a
+                    href='https://www.youtube.com/watch?v=r-GSGH2RxJs'
+                    class='underline'
+                >
+                    YouTube
+                </a>
+                .
+            </p>
+            <p>
+                It's a recreation of the popular drag and drop interface in{' '}
+                <a href='https://trello.com' class='underline'> Trello</a>{' '}
+                and other similar apps.
+            </p>
+            <p>If you want to play around, click sign up!</p>
+        </div>
+        <div
+            class='flex w-full justify-evenly max-w-md mt-8 rounded-3xl p-10 bg-slate-800'
+        >
+            <a
+                href='/signup'
+                class='text-xl font-medium text-brand-aqua underline'
+            >
+                Sign up
+            </a>
+            <div class='h-full border-r border-slate-500'></div>
+            <a
+                href='/login'
+                class='text-xl font-medium text-brand-aqua underline'
+            >
+                Login
+            </a>
+        </div>
+    </div>
+</BaseLayout>

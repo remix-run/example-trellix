@@ -1,0 +1,19 @@
+---
+import Input from './Input.astro'
+import Label from './Label.astro'
+
+interface Props {
+    id: string
+    label: string
+    name: string
+    type: string
+    required: boolean
+}
+
+const { id, label, name, type, required } = Astro.props
+---
+
+<Label htmlFor={id}>{label}</Label>
+<div class='mt-2'>
+    <Input id={id} {name} {type} {required} />
+</div>

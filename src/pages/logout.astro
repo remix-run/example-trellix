@@ -1,0 +1,9 @@
+---
+if (!Astro.locals.userId) {
+    return Astro.redirect('/login')
+}
+
+Astro.cookies.delete('jwt')
+
+return Astro.redirect('/login')
+---

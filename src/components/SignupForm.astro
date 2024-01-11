@@ -1,0 +1,84 @@
+---
+import Label from './Label.astro'
+
+interface Props {
+    errors: {
+        email: string
+        password: string
+    }
+    data: {
+        email: string
+        password: string
+    }
+}
+
+const { errors, data } = Astro.props
+---
+
+<form
+    class='space-y-6'
+    method='post'
+    target='/signup'
+    hx-post='/signup'
+    hx-swap='outerHTML'
+    hx-disabled-elt='this'
+>
+    <div>
+        <Label htmlFor='email'>
+            Email address{' '}
+            {
+                errors.email && (
+                    <span id='email-error' class='text-brand-red'>
+                        {errors.email}
+                    </span>
+                )
+            }
+        </Label>
+        <input
+            autofocus
+            id='email'
+            name='email'
+            type='email'
+            autocomplete='email'
+            class='form-input block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-blue sm:text-sm sm:leading-6'
+            aria-describedby={errors.email ? 'email-error' : 'signup-header'}
+            required
+            value={data.email}
+        />
+    </div>
+
+    <div>
+        <Label htmlFor='password'>
+            Password{' '}
+            {
+                errors.password && (
+                    <span id='password-error' class='text-brand-red'>
+                        {errors.password}
+                    </span>
+                )
+            }
+        </Label>
+        <input
+            id='password'
+            name='password'
+            type='password'
+            class='form-input block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-blue sm:text-sm sm:leading-6'
+            autocomplete='current-password'
+            aria-describedby='password-error'
+            required
+            value={data.password}
+        />
+    </div>
+
+    <button
+        type='submit'
+        class='flex w-full justify-center rounded-md bg-brand-blue px-1 py-1 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue'
+        >Sign up</button
+    >
+
+    <div class='text-sm text-slate-500'>
+        Already have an account?{' '}
+        <a class='underline' href='/login'>Log in</a>
+        .
+    </div>
+</form>

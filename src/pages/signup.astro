@@ -1,0 +1,131 @@
+---
+import jwt from 'jsonwebtoken'
+import { z } from 'zod'
+import { accountExists, createAccount } from '../server/queries'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import SignupForm from '../components/SignupForm.astro'
+
+if (Astro.locals.userId) {
+    return Astro.redirect('/home')
+}
+
+const htmx = !!Astro.request.headers.get('HX-Request')
+const isPost = Astro.request.method === 'POST'
+
+let formData = {
+    email: '',
+    password: '',
+}
+
+let errors = {
+    email: '',
+    password: '',
+}
+
+if (isPost) {
+    //@ts-ignore
+    async function signup() {
+        const data = await Astro.request.formData()
+        const email = data.get('email')
+        const password = data.get('password')
+
+        formData.email = String(email)
+        formData.password = String(password)
+
+        const result = z
+            .object({
+                email: z
+                    .string({
+                        invalid_type_error: 'Invalid email',
+                        required_error: 'Email is requeired',
+                    })
+                    .min(1, 'Email is required')
+                    .email(),
+                password: z
+                    .string({
+                        invalid_type_error: 'Invalid password',
+                        required_error: 'Password is required',
+                    })
+                    .min(6, 'Password must be atlest 6 digit long'),
+            })
+            .safeParse({ email, password })
+
+        if (!result.success) {
+            const emailError = result.error.flatten().fieldErrors.email
+            const passwordError = result.error.flatten().fieldErrors.password
+
+            errors.email = emailError && emailError[0] ? emailError[0] : ''
+            errors.password =
+                passwordError && passwordError[0] ? passwordError[0] : ''
+            return
+        }
+
+        if (await accountExists(result.data.email)) {
+            errors.email = 'Account already exist with this email'
+            return
+        }
+
+        const { id } = await createAccount(
+            result.data.email,
+            result.data.password
+        )
+
+        const token = jwt.sign({ id }, import.meta.env.JWT_SECRET)
+
+        Astro.cookies.set('jwt', token, {
+            httpOnly: true,
+            secure: import.meta.env.PROD,
+            maxAge: 365 * 24 * 60 * 60, //1 year
+        })
+
+        Astro.response.headers.set('HX-Redirect', '/home')
+        if (!htmx) {
+            return Astro.redirect('/home')
+        }
+    }
+    const res = await signup()
+
+    if (res) {
+        return res
+    }
+}
+---
+
+{
+    htmx && isPost ? (
+        <SignupForm {errors} data={formData} />
+    ) : (
+        <BaseLayout title='Signup'>
+            <div class='flex min-h-full flex-1 flex-col mt-20 sm:px-6 lg:px-8'>
+                <div class='sm:mx-auto sm:w-full sm:max-w-md'>
+                    <h2
+                        id='signup-header'
+                        class='mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900'
+                    >
+                        Sign up
+                    </h2>
+                </div>
+
+                <div class='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
+                    <div class='bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12'>
+                        <SignupForm {errors} data={formData} />
+                    </div>
+                    <div class='mt-8 space-y-2 mx-2'>
+                        <h3 class='font-bold text-black'>Privacy Notice</h3>
+                        <p>
+                            We won't use your email address for anything other
+                            than authenticating with this demo application. This
+                            app doesn't send email anyway, so you can put
+                            whatever fake email address you want.
+                        </p>
+                        <h3 class='font-bold text-black'>Terms of Service</h3>
+                        <p>
+                            This is a demo app, there are no terms of service.
+                            Don't be surprised if your data dissappears.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </BaseLayout>
+    )
+}

@@ -1,0 +1,13 @@
+---
+import { getHomeData } from '../server/queries'
+import Board from './Board.astro'
+
+const boards = await getHomeData(Astro.locals.userId!)
+---
+
+<div class='p-8'>
+    <h2 class='font-bold mb-2 text-xl'>Boards</h2>
+    <nav class='flex flex-wrap gap-8' id='boards'>
+        {boards.map((board) => <Board {board} />)}
+    </nav>
+</div>

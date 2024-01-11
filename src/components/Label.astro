@@ -1,0 +1,11 @@
+---
+interface Props {
+    htmlFor: string
+}
+
+const { htmlFor } = Astro.props
+---
+
+<label class='block text-sm font-medium leading-6 text-gray-900' for={htmlFor}>
+    <slot />
+</label>
