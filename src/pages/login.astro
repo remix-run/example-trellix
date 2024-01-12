@@ -37,8 +37,10 @@ if (isPost) {
                 email: z
                     .string({
                         invalid_type_error: 'Invalid email',
-                        required_error: 'Email is requeired',
+                        required_error: 'Email is required',
                     })
+                    .trim()
+                    .toLowerCase()
                     .min(1, 'Email is required')
                     .email(),
                 password: z

@@ -1,7 +1,9 @@
 ---
+import { z } from 'zod'
 import Boards from '../components/Boards.astro'
 import NewBoard from '../components/NewBoard.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { createBoard, deleteBoard } from '../server/queries'
 
 if (!Astro.locals.userId) {
     return Astro.redirect('/login')
@@ -12,9 +14,69 @@ const isPost = Astro.request.method === 'POST'
 const isDelete = Astro.request.method === 'DELETE'
 
 if (isPost) {
+    const data = await Astro.request.formData()
+    const name = data.get('name')
+    const color = data.get('color')
+
+    const result = z
+        .object({
+            name: z
+                .string({
+                    invalid_type_error: 'Invalid name',
+                    required_error: 'Name is required',
+                })
+                .trim()
+                .min(1, { message: 'Name is required' }),
+            color: z
+                .string({
+                    invalid_type_error: 'Invalid color',
+                    required_error: 'Color is required',
+                })
+                .trim()
+                .regex(/^#[0-9A-F]{6}$/i, 'Invalid color'),
+        })
+        .safeParse({ name, color })
+
+    if (!result.success) {
+        //TODO: retarget
+        return new Response('', { status: 400 })
+    }
+
+    const newBoard = await createBoard(
+        Astro.locals.userId,
+        result.data.name,
+        result.data.color
+    )
+
+    if (htmx) {
+        Astro.response.headers.set('Hx-Redirect', `/board/${newBoard.id}`)
+    } else {
+        return Astro.redirect(`/board/${newBoard.id}`)
+    }
 }
 
-if (!isDelete) {
+if (isDelete) {
+    const data = await Astro.request.formData()
+    let result = z
+        .number({
+            coerce: true,
+            invalid_type_error: 'Invalid boardId',
+            required_error: 'Invalid boardId',
+        })
+        .safeParse(data.get('boardId'))
+
+    if (!result.success) {
+        // TODO: retarget
+        return new Response('', { status: 404 })
+    }
+
+    const deletedBoard = await deleteBoard(result.data, Astro.locals.userId)
+
+    if (!deletedBoard) {
+        return new Response('', { status: 404 })
+    }
+
+    return new Response('', { status: 200 })
 }
 ---
 

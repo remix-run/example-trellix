@@ -1,6 +1,4 @@
 ---
-import Label from './Label.astro'
-
 interface Props {
     errors: {
         email: string
@@ -24,7 +22,10 @@ const { errors, data } = Astro.props
     hx-disabled-elt='this'
 >
     <div>
-        <Label htmlFor='email'>
+        <label
+            class='block text-sm font-medium leading-6 text-gray-900'
+            for='email'
+        >
             Email address{' '}
             {
                 errors.email && (
@@ -33,7 +34,7 @@ const { errors, data } = Astro.props
                     </span>
                 )
             }
-        </Label>
+        </label>
         <input
             autofocus
             id='email'
@@ -48,7 +49,10 @@ const { errors, data } = Astro.props
     </div>
 
     <div>
-        <Label htmlFor='password'>
+        <label
+            class='block text-sm font-medium leading-6 text-gray-900'
+            for='password'
+        >
             Password{' '}
             {
                 errors.password && (
@@ -57,7 +61,7 @@ const { errors, data } = Astro.props
                     </span>
                 )
             }
-        </Label>
+        </label>
         <input
             id='password'
             name='password'

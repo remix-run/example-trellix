@@ -7,7 +7,7 @@ interface Props {
 
 const { title } = Astro.props
 
-let userId = 0
+let userId = Astro.locals.userId
 ---
 
 <html lang='en'>
