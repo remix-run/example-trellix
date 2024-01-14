@@ -14,13 +14,14 @@ const { title, content, id, boardId } = Astro.props
 ---
 
 <li
+    x-data='{acceptDrop:"none"}'
     ondragover=''
     ondragleave=''
     ondrop=''
     class={'item-card border-t-2 border-b-2 -mb-[2px] last:mb-0 cursor-grab active:cursor-grabbing px-2 py-1 ' +
         (''
             ? 'border-t-brand-red border-b-transparent'
-            : 'bottom'
+            : ''
               ? 'border-b-brand-red border-t-transparent'
               : 'border-t-transparent border-b-transparent')}
 >
@@ -34,17 +35,17 @@ const { title, content, id, boardId } = Astro.props
         <form
             hx-post={`/board/${boardId}`}
             hx-target='closest .item-card'
-            hx-indicator='closest .board'
+            hx-indicator='closest .item-card'
             hx-swap='delete'
         >
-            <input type='hidden' name='intent' value={ACTIONS.deleteItem} />
+            <input type='hidden' name='action' value={ACTIONS.deleteItem} />
             <input type='hidden' name='itemId' value={id} />
             <button
                 aria-label='Delete card'
                 class='absolute top-4 right-4 hover:text-brand-red'
                 type='submit'
             >
-                Delete
+                ❌
             </button>
         </form>
     </div>

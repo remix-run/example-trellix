@@ -22,6 +22,5 @@ const { id, name } = Astro.props
     buttonLabel={`Edit board "${name}" name`}
     inputLabel='Edit board name'
 >
-    <input type='hidden' name='intent' />
     <input type='hidden' name='id' value={id} />
 </EditableText>

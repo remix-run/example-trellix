@@ -151,14 +151,12 @@ if (Astro.request.method === 'POST') {
             const itemId = String(data.get('itemId'))
 
             const item = await deleteItem(itemId)
+            console.log(itemId)
 
             if (!item) {
                 return new Response('', { status: 400 })
             }
             return new Response('', { status: 200 })
-        }
-        case ACTIONS.moveColumn: {
-            break
         }
         case ACTIONS.moveItem: {
             break
