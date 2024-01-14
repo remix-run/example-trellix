@@ -1,0 +1,27 @@
+---
+import { ACTIONS } from '../types'
+import EditableText from './EditableText.astro'
+
+interface Props {
+    id: number
+    name: string
+}
+
+const { id, name } = Astro.props
+---
+
+<EditableText
+    hxPost={`/board/${id}`}
+    hxSwap='outerHTML'
+    hxTarget='closest .editableText'
+    action={ACTIONS.updateBoardName}
+    value={name}
+    fieldName='name'
+    inputClass='mx-8 my-4 text-2xl font-medium border border-slate-400 rounded-lg py-1 px-2 text-black'
+    buttonClass='mx-8 my-4 text-2xl font-medium block rounded-lg text-left border border-transparent py-1 px-2 text-slate-800'
+    buttonLabel={`Edit board "${name}" name`}
+    inputLabel='Edit board name'
+>
+    <input type='hidden' name='intent' />
+    <input type='hidden' name='id' value={id} />
+</EditableText>

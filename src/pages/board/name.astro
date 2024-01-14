@@ -1,0 +1,40 @@
+---
+interface Props {
+    inputLabel: string
+    fieldName: string
+    value: string
+    inputClass: string
+    buttonLabel: string
+    buttonClass: string
+}
+
+const { buttonClass, buttonLabel, fieldName, inputClass, inputLabel, value } =
+    Astro.props
+---
+
+<div x-data=`{edit:false}`>
+    <template x-if='edit'>
+        <form hx-put='/'>
+            <slot />
+            <input
+                type='text'
+                aria-label={inputLabel}
+                name={fieldName}
+                {value}
+                class={inputClass}
+                @keydown.escape={`edit=false;$el.value=${value}`}
+                @blur={`edit=false;$el.value=${value}`}
+            />
+        </form>
+    </template>
+    <template x-if='!edit'>
+        <button
+            aria-label={buttonLabel}
+            type='button'
+            @click='edit = true'
+            class={buttonClass}
+        >
+            {value || <span class='text-slate-400 italic'>Edit</span>}
+        </button>
+    </template>
+</div>

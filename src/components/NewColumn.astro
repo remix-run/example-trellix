@@ -1,0 +1,84 @@
+---
+import { ACTIONS } from '../types'
+
+interface Props {
+    open?: boolean
+    boardId: number
+}
+
+const { open = false, boardId } = Astro.props
+---
+
+<!-- TODO: Scroll right, loading state and progrssive enhancement -->
+<div
+    id='newColDiv'
+    x-data={`{edit:${open}}`}
+    x-init={`$watch('edit', value => {
+    if (edit) {
+        htmx.process(document.querySelector('#newColumn'))
+    }
+})`}
+>
+    <template x-if='edit'>
+        <form
+            hx-post={`/board/${boardId}`}
+            hx-target='#newColDiv'
+            hx-swap='beforebegin'
+            hx-on::after-request='this.reset()'
+            x-init='$el.addEventListener("htmx:after-swap", ()=>console.log(1))'
+            id='newColumn'
+            class='p-2 flex-shrink-0 flex flex-col gap-5 overflow-hidden max-h-full w-80 border rounded-xl shadow bg-slate-100'
+        >
+            <input type='hidden' name='action' value={ACTIONS.createColumn} />
+            <input
+                autofocus
+                required
+                type='text'
+                name='name'
+                @keydown.escape={`edit=false`}
+                class='border border-slate-400 w-full rounded-lg py-1 px-2 font-medium text-black'
+            />
+            <div class='flex justify-between'>
+                <button
+                    class='text-sm rounded-lg text-left p-2 font-medium text-white bg-brand-blue'
+                    type='submit'>Save Column</button
+                >
+                <button
+                    @click={`edit=false`}
+                    class='text-sm rounded-lg text-left p-2 font-medium hover:bg-slate-200 focus:bg-slate-200'
+                    type='button'>Cancel</button
+                >
+            </div>
+        </form>
+    </template>
+    <template x-if='!edit'>
+        <button
+            @click='edit=true'
+            aria-label='Add new column'
+            class='flex-shrink-0 flex justify-center h-10 w-10 bg-black hover:bg-white bg-opacity-10 hover:bg-opacity-5 rounded-xl'
+        >
+            <span class='text-xl'>+</span>
+        </button>
+    </template>
+</div>
+<!-- <script>
+    const onSubmit = (event) => {
+        event.preventDefault()
+        let formData = new FormData(event.currentTarget)
+        formData.set('id', crypto.randomUUID())
+        submit(formData, {
+            navigate: false,
+            method: 'post',
+            unstable_flushSync: true,
+        })
+        onAdd()
+        invariant(inputRef.current, 'missing input ref')
+        inputRef.current.value = ''
+    }
+
+    const onBlur = (event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+            setEditing(false)
+        }
+    }
+</script> -->

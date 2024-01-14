@@ -1,0 +1,115 @@
+---
+import { ACTIONS } from '../types'
+
+interface Props {
+    title: string
+    content: string | null
+    id: string
+    order: number
+    columnId: string
+    boardId: number
+}
+
+const { title, content, id, boardId } = Astro.props
+---
+
+<li
+    ondragover=''
+    ondragleave=''
+    ondrop=''
+    class={'item-card border-t-2 border-b-2 -mb-[2px] last:mb-0 cursor-grab active:cursor-grabbing px-2 py-1 ' +
+        (''
+            ? 'border-t-brand-red border-b-transparent'
+            : 'bottom'
+              ? 'border-b-brand-red border-t-transparent'
+              : 'border-t-transparent border-b-transparent')}
+>
+    <div
+        draggable
+        class='bg-white shadow shadow-slate-300 border-slate-300 text-sm rounded-lg w-full py-1 px-2 relative'
+        ondragstart=''
+    >
+        <h3>{title}</h3>
+        <div class='mt-2'>{content || <>&nbsp;</>}</div>
+        <form
+            hx-post={`/board/${boardId}`}
+            hx-target='closest .item-card'
+            hx-indicator='closest .board'
+            hx-swap='delete'
+        >
+            <input type='hidden' name='intent' value={ACTIONS.deleteItem} />
+            <input type='hidden' name='itemId' value={id} />
+            <button
+                aria-label='Delete card'
+                class='absolute top-4 right-4 hover:text-brand-red'
+                type='submit'
+            >
+                Delete
+            </button>
+        </form>
+    </div>
+</li>
+
+<script>
+    //on dragover
+    // (event) => {
+    //     if (event.dataTransfer.types.includes(CONTENT_TYPES.card)) {
+    //         event.preventDefault()
+    //         event.stopPropagation()
+    //         let rect = event.currentTarget.getBoundingClientRect()
+    //         let midpoint = (rect.top + rect.bottom) / 2
+    //         setAcceptDrop(event.clientY <= midpoint ? 'top' : 'bottom')
+    //     }
+    // }
+
+    //on drop leave
+    // () => {
+    //     setAcceptDrop('none')
+    // }
+
+    //ondrop
+    // (event) => {
+    //     event.stopPropagation()
+
+    //     let transfer = JSON.parse(
+    //         event.dataTransfer.getData(CONTENT_TYPES.card)
+    //     )
+    //     invariant(transfer.id, 'missing cardId')
+    //     invariant(transfer.title, 'missing title')
+
+    //     let droppedOrder = acceptDrop === 'top' ? previousOrder : nextOrder
+    //     let moveOrder = (droppedOrder + order) / 2
+
+    //     let mutation: ItemMutation = {
+    //         order: moveOrder,
+    //         columnId: columnId,
+    //         id: transfer.id,
+    //         title: transfer.title,
+    //     }
+
+    //     submit(
+    //         { ...mutation, intent: INTENTS.moveItem },
+    //         {
+    //             method: 'post',
+    //             navigate: false,
+    //             fetcherKey: `card:${transfer.id}`,
+    //         }
+    //     )
+
+    //     setAcceptDrop('none')
+    // }
+
+    //ondragstart
+    // (event) => {
+    //         event.dataTransfer.effectAllowed = 'move'
+    //         event.dataTransfer.setData(
+    //             CONTENT_TYPES.card,
+    //             JSON.stringify({ id, title })
+    //         )
+    //     }
+</script>
+<style>
+    .item-card.htmx-request {
+        display: none !important;
+    }
+</style>

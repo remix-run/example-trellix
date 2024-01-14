@@ -1,0 +1,27 @@
+---
+import { ACTIONS } from '../types'
+import EditableText from './EditableText.astro'
+
+interface Props {
+    columnId: string
+    boardId: number
+    name: string
+}
+
+const { boardId, columnId, name } = Astro.props
+---
+
+<EditableText
+    hxPost={`/board/${boardId}`}
+    hxSwap='outerHTML'
+    hxTarget='closest .editableText'
+    action={ACTIONS.updateColumnName}
+    fieldName='name'
+    value={name}
+    inputLabel='Edit column name'
+    buttonLabel={`Edit column "${name}" name`}
+    inputClass='border border-slate-400 w-full rounded-lg py-1 px-2 font-medium text-black'
+    buttonClass='block rounded-lg text-left w-full border border-transparent py-1 px-2 font-medium text-slate-600'
+>
+    <input type='hidden' name='columnId' value={columnId} />
+</EditableText>

@@ -1,0 +1,45 @@
+---
+import type { getBoardData } from '../server/queries'
+import Column from './Column.astro'
+import NewColumn from './NewColumn.astro'
+import EditableBoardTitle from './EditableBoardTitle.astro'
+
+interface Props {
+    board: NonNullable<Awaited<ReturnType<typeof getBoardData>>>
+}
+
+const { board } = Astro.props
+---
+
+<div
+    class='h-full min-h-0 flex flex-col overflow-x-scroll'
+    style={{ backgroundColor: board.color }}
+    x-ref='scrollDiv'
+>
+    <h1>
+        <EditableBoardTitle id={board.id} name={board.name} />
+    </h1>
+
+    <div class='flex flex-grow min-h-0 h-full items-start gap-4 px-8 pb-4'>
+        {
+            [...board.columns.values()].map((col) => {
+                return (
+                    <Column
+                        items={board.items.filter(
+                            (item) => item.columnId === col.id
+                        )}
+                        column={{ id: col.id, name: col.name }}
+                        boardId={board.id}
+                    />
+                )
+            })
+        }
+
+        <NewColumn boardId={board.id} open={board.columns.length === 0} />
+
+        {
+            /* trolling you to add some extra margin to the right of the container with a whole dang div */
+        }
+        <div data-lol class='w-8 h-1 flex-shrink-0'></div>
+    </div>
+</div>

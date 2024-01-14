@@ -1,0 +1,113 @@
+---
+import { ACTIONS } from '../types'
+
+interface Props {
+    columnId: string
+    boardId: number
+}
+
+const { boardId, columnId } = Astro.props
+---
+
+<div
+    x-data='{edit:false}'
+    x-init={`$watch('edit', value => {
+    if (edit) {
+        htmx.process(document.querySelector('#column-${columnId}-addCard'))
+    }
+})`}
+>
+    <template x-if='edit'>
+        <form
+            id={`column-${columnId}-addCard`}
+            hx-post={`/board/${boardId}`}
+            hx-target={`#column-${columnId}`}
+            hx-swap='beforeend'
+            hx-on::after-request='this.reset()'
+            class='px-2 py-1 border-t-2 border-b-2 border-transparent'
+        >
+            <input type='hidden' name='action' value={ACTIONS.createItem} />
+            <input type='hidden' name='columnId' value={columnId} />
+
+            <!-- TODO: adjustable textarea -->
+            <textarea
+                x-init='$el.focus()'
+                required
+                name='title'
+                placeholder='Enter a title for this card'
+                class='outline-none shadow text-sm rounded-lg w-full py-1 px-2 resize-none placeholder:text-sm placeholder:text-slate-500 h-14'
+                @keydown.escape={`edit=false`}
+                @keydown.shift.enter='$refs.saveCard.click()'></textarea>
+            <div class='flex justify-between'>
+                <button
+                    x-ref='saveCard'
+                    class='text-sm rounded-lg text-left p-2 font-medium text-white bg-brand-blue'
+                    type='submit'>Save Card</button
+                >
+                <button
+                    @click='edit=false'
+                    class='text-sm rounded-lg text-left p-2 font-medium hover:bg-slate-200 focus:bg-slate-200'
+                    type='button'>Cancel</button
+                >
+            </div>
+        </form>
+    </template>
+    <template x-if='!edit'>
+        <div class='p-2'>
+            <button
+                @click='edit=true'
+                type='button'
+                class='flex items-center gap-2 rounded-lg text-left w-full p-2 font-medium text-slate-500 hover:bg-slate-200 focus:bg-slate-200'
+            >
+                Add a card
+            </button>
+        </div>
+    </template>
+</div>
+<script>
+    //onsubmit
+    // (event) => {
+    //     event.preventDefault()
+
+    //     let formData = new FormData(event.currentTarget)
+    //     let id = crypto.randomUUID()
+    //     formData.set(ItemMutationFields.id.name, id)
+
+    //     submit(formData, {
+    //         method: 'post',
+    //         fetcherKey: `card:${id}`,
+    //         navigate: false,
+    //         unstable_flushSync: true,
+    //     })
+
+    //     invariant(textAreaRef.current)
+    //     textAreaRef.current.value = ''
+    //     onAddCard()
+    // }
+
+    //onblur
+    // (event) => {
+    //     if (!event.currentTarget.contains(event.relatedTarget)) {
+    //         onComplete()
+    //     }
+    // }
+
+    //onketdown
+    // (event) => {
+    //         if (event.key === 'Enter') {
+    //             event.preventDefault()
+    //             invariant(buttonRef.current, 'expected button ref')
+    //             buttonRef.current.click()
+    //         }
+    //         if (event.key === 'Escape') {
+    //             onComplete()
+    //         }
+    //     }
+
+    //onchange
+
+    // (event) => {
+    //         let el = event.currentTarget
+    //         el.style.height = el.scrollHeight + 'px'
+    //     }
+</script>

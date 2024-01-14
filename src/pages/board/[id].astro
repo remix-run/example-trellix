@@ -1,0 +1,228 @@
+---
+import { z } from 'zod'
+import EditableBoardTitle from '../../components/EditableBoardTitle.astro'
+import TheBoard from '../../components/TheBoard.astro'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import {
+    createItem,
+    createColumn,
+    getBoardData,
+    updateBoardName,
+    updateColumnName,
+    deleteItem,
+} from '../../server/queries'
+import { ACTIONS } from '../../types'
+import Column from '../../components/Column.astro'
+import EditableColumnTitle from '../../components/EditableColumnTitle.astro'
+import Card from '../../components/Card.astro'
+
+if (!Astro.locals.userId) {
+    return Astro.redirect('/login')
+}
+
+if (!Astro.params.id) {
+    return new Response('', { status: 404 })
+}
+
+const id = Number(Astro.params.id)
+
+if (isNaN(id)) {
+    return new Response('', { status: 404 })
+}
+
+let board = await getBoardData(id, Astro.locals.userId)
+
+if (!board) {
+    return new Response('', { status: 404 })
+}
+
+let action: (typeof ACTIONS)[keyof typeof ACTIONS] | undefined = undefined
+let newCol: Awaited<ReturnType<typeof createColumn>> | undefined = undefined
+let updatedColumn: { name: string; cloumnId: string } | undefined = undefined
+let newItem: Awaited<ReturnType<typeof createItem>> | undefined = undefined
+
+if (Astro.request.method === 'POST') {
+    const data = await Astro.request.formData()
+    const act = String(data.get('action'))
+
+    switch (act) {
+        case ACTIONS.updateBoardName: {
+            action = act
+            const result = z
+                .string({
+                    invalid_type_error: 'Invalid name',
+                    required_error: 'Name is required',
+                })
+                .trim()
+                .min(1, { message: 'Name is required' })
+                .safeParse(data.get('name'))
+
+            if (!result.success) {
+                return new Response('', { status: 400 })
+            }
+
+            const b = await updateBoardName(board.id, result.data)
+            board.name = b.name
+            break
+        }
+        case ACTIONS.updateColumnName: {
+            action = act
+            const result = z
+                .object({
+                    name: z
+                        .string({
+                            invalid_type_error: 'Invalid name',
+                            required_error: 'Name is required',
+                        })
+                        .trim()
+                        .min(1, { message: 'Name is required' }),
+                    columnId: z
+                        .string({
+                            invalid_type_error: 'Invalid columnId',
+                            required_error: 'ColumnId is required',
+                        })
+                        .trim()
+                        .min(1, { message: 'ColumnId is required' }),
+                })
+                .safeParse({
+                    name: data.get('name'),
+                    columnId: data.get('columnId'),
+                })
+
+            if (!result.success) {
+                return new Response('', { status: 400 })
+            }
+
+            const c = await updateColumnName(
+                result.data.columnId,
+                result.data.name
+            )
+            updatedColumn = {
+                name: c.name,
+                cloumnId: c.id,
+            }
+            break
+        }
+        case ACTIONS.createColumn: {
+            action = act
+            const result = z
+                .string({
+                    invalid_type_error: 'Invalid name',
+                    required_error: 'Name is required',
+                })
+                .trim()
+                .min(1, { message: 'Name is required' })
+                .safeParse(data.get('name'))
+
+            if (!result.success) {
+                return new Response('', { status: 400 })
+            }
+
+            newCol = await createColumn(board.id, result.data)
+            break
+        }
+        case ACTIONS.createItem: {
+            action = act
+            const columnId = String(data.get('columnId'))
+
+            const col = board.columns.findIndex((c) => c.id === columnId)
+
+            if (col === -1) {
+                return new Response('', { status: 400 })
+            }
+
+            const result = z
+                .string({
+                    invalid_type_error: 'Invalid title',
+                    required_error: 'Title is required',
+                })
+                .trim()
+                .min(1, { message: 'Title is required' })
+                .safeParse(data.get('title'))
+
+            if (!result.success) {
+                return new Response('', { status: 400 })
+            }
+
+            newItem = await createItem(board.id, columnId, result.data)
+            break
+        }
+        case ACTIONS.deleteItem: {
+            const itemId = String(data.get('itemId'))
+
+            const item = await deleteItem(itemId)
+
+            if (!item) {
+                return new Response('', { status: 400 })
+            }
+            return new Response('', { status: 200 })
+        }
+        case ACTIONS.moveColumn: {
+            break
+        }
+        case ACTIONS.moveItem: {
+            break
+        }
+        default: {
+            return new Response('', { status: 400 })
+        }
+    }
+}
+---
+
+{
+    action === undefined && (
+        <BaseLayout title={`${board.name} Board`}>
+            <TheBoard {board} />
+            <template>
+                <Column
+                    items={[]}
+                    boardId={board.id}
+                    column={{ id: '', name: '' }}
+                />
+            </template>
+        </BaseLayout>
+    )
+}
+
+{
+    action && action === ACTIONS.updateBoardName && (
+        <>
+            <EditableBoardTitle id={board.id} name={board.name} />
+            <title>{board.name} - Trellix</title>
+        </>
+    )
+}
+
+{
+    action && action === ACTIONS.updateColumnName && updatedColumn && (
+        <EditableColumnTitle
+            boardId={board.id}
+            columnId={updatedColumn.cloumnId}
+            name={updatedColumn.name}
+        />
+    )
+}
+
+{
+    action && action === ACTIONS.createColumn && newCol && (
+        <Column
+            boardId={board.id}
+            items={[]}
+            column={{ id: newCol.id, name: newCol.name }}
+        />
+    )
+}
+
+{
+    action && action === ACTIONS.createItem && newItem && (
+        <Card
+            boardId={board.id}
+            columnId={newItem.columnId}
+            id={newItem.id}
+            content={newItem.content}
+            title={newItem.title}
+            order={newItem.order}
+        />
+    )
+}

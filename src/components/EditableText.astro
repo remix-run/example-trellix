@@ -1,0 +1,68 @@
+---
+interface Props {
+    inputLabel: string
+    fieldName: string
+    value: string
+    inputClass: string
+    buttonLabel: string
+    buttonClass: string
+    hxPost: string
+    hxTarget: string
+    hxSwap: string
+    action?: string
+}
+
+const {
+    buttonClass,
+    buttonLabel,
+    fieldName,
+    inputClass,
+    inputLabel,
+    value,
+    hxPost,
+    hxSwap,
+    hxTarget,
+    action,
+} = Astro.props
+---
+
+<div
+    x-data=`{edit:false}`
+    class='editableText'
+    x-init={`$watch('edit', value => {
+    if (edit) {
+        htmx.process(document.querySelector('#${action}-form'))
+    }
+})`}
+>
+    <template x-if='edit'>
+        <form
+            hx-post={hxPost}
+            hx-target={hxTarget}
+            hx-swap={hxSwap}
+            id={`${action}-form`}
+        >
+            {action && <input type='hidden' name='action' value={action} />}
+            <slot />
+            <input
+                type='text'
+                aria-label={inputLabel}
+                name={fieldName}
+                {value}
+                class={inputClass}
+                @keydown.escape={`edit=false;$el.value='${value}'`}
+                @blur={`edit=false;$el.value='${value}'`}
+            />
+        </form>
+    </template>
+    <template x-if='!edit'>
+        <button
+            aria-label={buttonLabel}
+            type='button'
+            @click='edit = true'
+            class={buttonClass}
+        >
+            {value || <span class='text-slate-400 italic'>Edit</span>}
+        </button>
+    </template>
+</div>
