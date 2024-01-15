@@ -180,7 +180,7 @@ if (Astro.request.method === 'POST') {
             }
 
             //const oldColItems = board.items.filter((item) => item.columnId === oldCol.id)
-            const newColItems = board.items.filter((item) => item.columnId === newCol.id)
+            const newColItems = board.items.filter((item) => item.columnId === newCol.id).sort((a, b) => a.order - b.order)
 
             if(prevItemId === 'undefined' && nextItemId === 'undefined'){
                 if(newColItems.length !== 0){
@@ -211,11 +211,15 @@ if (Astro.request.method === 'POST') {
 
             const prevItemIndex = newColItems.findIndex(item => item.id === prevItemId)
 
-            if(newColItems[prevItemIndex+1]?.id !== newItem){
+            if(prevItemIndex === -1){
                 return new Response('', {status:400})
             }
 
-            await reorder(itemId, newColumnId, newColItems[prevItemIndex]!.order+newColItems[prevItemIndex+1]!.order)
+            if(newColItems[prevItemIndex+1]?.id !== nextItemId){
+                return new Response('', {status:400})
+            }
+
+            await reorder(itemId, newColumnId, (newColItems[prevItemIndex]!.order+newColItems[prevItemIndex+1]!.order)/2)
             return new Response('', {status:200})
         }
         default: {
