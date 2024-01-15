@@ -128,7 +128,7 @@ export async function createItem(
     title: string
 ) {
     return await prisma.$transaction(async (tx) => {
-        let order = 0
+        let order = 1
         const lastItem = await tx.item.findFirst({
             where: { boardId, columnId },
             orderBy: { order: 'desc' },
@@ -162,6 +162,18 @@ export function upsertItem(
         },
         create: mutation,
         update: mutation,
+    })
+}
+
+export function reorder(itemId: string, newColumnId: string, order: number) {
+    return prisma.item.update({
+        where: {
+            id: itemId,
+        },
+        data: {
+            columnId: newColumnId,
+            order,
+        },
     })
 }
 

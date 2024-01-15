@@ -10,6 +10,7 @@ import {
     updateBoardName,
     updateColumnName,
     deleteItem,
+    reorder
 } from '../../server/queries'
 import { ACTIONS } from '../../types'
 import Column from '../../components/Column.astro'
@@ -159,7 +160,63 @@ if (Astro.request.method === 'POST') {
             return new Response('', { status: 200 })
         }
         case ACTIONS.moveItem: {
-            break
+            const newColumnId = String(data.get('newColumnId'))
+            const oldColumnId = String(data.get('oldColumnId'))
+            const itemId = String(data.get('itemId'))
+            const prevItemId = String(data.get('prevItemId'))
+            const nextItemId = String(data.get('nextItemId'))
+
+            const item = board.items.findIndex(item => item.id === itemId && item.columnId === oldColumnId)
+
+            if(item === -1){
+                return new Response('', {status:400})
+            }
+
+            const oldCol = board.columns.find(c => c.id === oldColumnId)
+            const newCol = board.columns.find(c => c.id === newColumnId)
+
+            if(!oldCol || !newCol){
+                return new Response('', {status:400})
+            }
+
+            //const oldColItems = board.items.filter((item) => item.columnId === oldCol.id)
+            const newColItems = board.items.filter((item) => item.columnId === newCol.id)
+
+            if(prevItemId === 'undefined' && nextItemId === 'undefined'){
+                if(newColItems.length !== 0){
+                    return new Response('', {status:400})
+                }
+
+                await reorder(itemId, newColumnId, 1)
+               return new Response('', {status:200})
+            }
+
+            if(prevItemId === 'undefined'){
+                if(newColItems[0]?.id !== nextItemId){
+                    return new Response('', {status:400})
+                }
+
+                await reorder(itemId, newColumnId, newColItems[0].order/2)
+                return new Response('', {status:200})
+            }
+
+            if(nextItemId === 'undefined'){
+                if(newColItems[newColItems.length-1]?.id !== prevItemId){
+                    return new Response('', {status:400})
+                }
+
+                await reorder(itemId, newColumnId, newColItems[newColItems.length-1]!.order+1)
+                return new Response('', {status:200})
+            }
+
+            const prevItemIndex = newColItems.findIndex(item => item.id === prevItemId)
+
+            if(newColItems[prevItemIndex+1]?.id !== newItem){
+                return new Response('', {status:400})
+            }
+
+            await reorder(itemId, newColumnId, newColItems[prevItemIndex]!.order+newColItems[prevItemIndex+1]!.order)
+            return new Response('', {status:200})
         }
         default: {
             return new Response('', { status: 400 })
@@ -179,6 +236,61 @@ if (Astro.request.method === 'POST') {
                     column={{ id: '', name: '' }}
                 />
             </template>
+            <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha512-TelkP3PCMJv+viMWynjKcvLsQzx6dJHvIGhfqzFtZKgAjKM1YPqcwzzDEoTc/BHjf43PcPzTQOjuTr4YdE8lNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            <script is:inline>
+                
+                const addTask = (() => {
+                    let pending = Promise.resolve();
+                    
+                    const run = async (url, options) => {
+                        try {
+                        await pending;
+                        } catch(err){
+                            alert('Something went wrong while syncing. Triggering full page reload')
+                            window.location.reload()
+                        } finally {
+                        return fetch(url, options);
+                        }
+                    }
+
+                    // update pending promise so that next task could await for it
+                    return (url, options) => (pending = run(url, options))
+                })();
+
+                htmx.onLoad(function(content) {
+                    var sortables = content.querySelectorAll(".sortable");
+                    for (var i = 0; i < sortables.length; i++) {
+                        var sortable = sortables[i];
+                        new Sortable(sortable, {
+                            animation: 150,
+                            group: 'shared',
+                            onEnd: (e) => {
+                                const oldColumnId = e.from.getAttribute('data-column-id')
+                                const newColumnId = e.to.getAttribute('data-column-id')
+
+                                const prevItemId = e.to.children[e.newIndex-1]?.getAttribute('data-item-id')
+                                const nextItemId = e.to.children[e.newIndex+1]?.getAttribute('data-item-id')
+                                const itemId = e.to.children[e.newIndex]?.getAttribute('data-item-id')
+                                const body = new FormData()
+
+                                body.append("oldColumnId", oldColumnId)
+                                body.append("newColumnId", newColumnId)
+                                body.append("prevItemId", prevItemId)
+                                body.append("nextItemId", nextItemId)
+                                body.append("itemId", itemId)
+                                body.append("action", "moveItem")
+
+                                if(!(oldColumnId === newColumnId && e.oldIndex === e.newIndex)){
+                                    addTask("", {
+                                    method:"POST",
+                                    body
+                                    })
+                                }
+                            }
+                        });
+                    }
+                })
+            </script>
         </BaseLayout>
     )
 }

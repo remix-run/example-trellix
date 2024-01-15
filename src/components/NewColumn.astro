@@ -61,24 +61,3 @@ const { open = false, boardId } = Astro.props
         </button>
     </template>
 </div>
-<!-- <script>
-    const onSubmit = (event) => {
-        event.preventDefault()
-        let formData = new FormData(event.currentTarget)
-        formData.set('id', crypto.randomUUID())
-        submit(formData, {
-            navigate: false,
-            method: 'post',
-            unstable_flushSync: true,
-        })
-        onAdd()
-        invariant(inputRef.current, 'missing input ref')
-        inputRef.current.value = ''
-    }
-
-    const onBlur = (event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) {
-            setEditing(false)
-        }
-    }
-</script> -->

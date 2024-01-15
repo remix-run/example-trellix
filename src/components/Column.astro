@@ -17,21 +17,7 @@ const { boardId, column, items } = Astro.props
 ---
 
 <div
-    x-data='{acceptDrop:false}'
     class='flex-shrink-0 flex flex-col overflow-hidden max-h-full w-80 rounded-xl shadow-sm shadow-slate-400 bg-slate-100 the-col'
-    :class={`{'border-2 border-brand-red':acceptDrop}`}
-    x-on:dragover={`
-        if (event.dataTransfer.types.includes('htmx/card') && event.currentTarget.querySelector('ul').children.length === 0) {
-            event.preventDefault()
-            acceptDrop = true
-        }
-    `}
-    x-on:dragleave='acceptDrop=false'
-    x-on:drop.prevent={`
-        acceptDrop=false
-        let child = document.getElementById(event.dataTransfer.getData('htmx/card'))
-        event.currentTarget.querySelector('ul').appendChild(child)
-`}
 >
     <div class='p-2'>
         <EditableColumnTitle
@@ -40,7 +26,11 @@ const { boardId, column, items } = Astro.props
             name={column.name}
         />
 
-        <ul class='flex-grow overflow-auto' id={`column-${column.id}`}>
+        <ul
+            class='flex-grow overflow-auto sortable'
+            id={`column-${column.id}`}
+            data-column-id={column.id}
+        >
             {
                 items
                     .sort((a, b) => a.order - b.order)
@@ -58,50 +48,4 @@ const { boardId, column, items } = Astro.props
         </ul>
         <NewCard columnId={column.id} {boardId} />
     </div>
-    <script>
-        // ondragover
-        // (event) => {
-        //     if (
-        //         items.length === 0 &&
-        //         event.dataTransfer.types.includes(CONTENT_TYPES.card)
-        //     ) {
-        //         event.preventDefault()
-        //         setAcceptDrop(true)
-        //     }
-        // }
-
-        // ondragleave
-        // () => {
-        //     setAcceptDrop(false)
-        // }
-
-        //ondrop
-        // (event) => {
-        //     let transfer = JSON.parse(
-        //         event.dataTransfer.getData(CONTENT_TYPES.card)
-        //     )
-        //     invariant(transfer.id, 'missing transfer.id')
-        //     invariant(transfer.title, 'missing transfer.title')
-
-        //     let mutation: ItemMutation = {
-        //         order: 1,
-        //         columnId: columnId,
-        //         id: transfer.id,
-        //         title: transfer.title,
-        //     }
-
-        //     submit(
-        //         { ...mutation, intent: INTENTS.moveItem },
-        //         {
-        //             method: 'post',
-        //             navigate: false,
-        //             // use the same fetcher instance for any mutations on this card so
-        //             // that interruptions cancel the earlier request and revalidation
-        //             fetcherKey: `card:${transfer.id}`,
-        //         }
-        //     )
-
-        //     setAcceptDrop(false)
-        // }
-    </script>
 </div>
