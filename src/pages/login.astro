@@ -25,6 +25,7 @@ let errors = {
 if (isPost) {
     //@ts-ignore
     async function handleLogin() {
+        await new Promise((res, _) => setTimeout(res, 5000))
         const data = await Astro.request.formData()
         const email = data.get('email')
         const password = data.get('password')
