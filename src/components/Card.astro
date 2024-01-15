@@ -14,21 +14,39 @@ const { title, content, id, boardId } = Astro.props
 ---
 
 <li
+    id={`card-${id}`}
     x-data='{acceptDrop:"none"}'
-    ondragover=''
-    ondragleave=''
-    ondrop=''
-    class={'item-card border-t-2 border-b-2 -mb-[2px] last:mb-0 cursor-grab active:cursor-grabbing px-2 py-1 ' +
-        (''
-            ? 'border-t-brand-red border-b-transparent'
-            : ''
-              ? 'border-b-brand-red border-t-transparent'
-              : 'border-t-transparent border-b-transparent')}
+    draggable='true'
+    x-on:dragstart.self={`event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('htmx/card',event.target.id)`}
+    x-on:dragover.prevent={`
+    if (event.dataTransfer.types.includes('htmx/card')) {
+        let rect = event.currentTarget.getBoundingClientRect()
+        let midpoint = (rect.top + rect.bottom) / 2
+        acceptDrop = event.clientY <= midpoint ? 'top' : 'bottom'
+    }
+    `}
+    x-on:dragleave='acceptDrop="none"'
+    x-on:drop.prevent={`
+        acceptDrop="none"
+        let rect = event.currentTarget.getBoundingClientRect()
+        let midpoint = (rect.top + rect.bottom) / 2
+        let position = event.clientY <= midpoint ? 'top' : 'bottom'
+        
+        let child = document.getElementById(event.dataTransfer.getData('htmx/card'))
+        console.log(event.currentTarget, position)
+        if(position === 'top'){
+            event.currentTarget.closest('ul').insertBefore(child,event.currentTarget)
+        }
+        if(position === 'bottom'){
+            event.currentTarget.closest('ul').insertAfter(child,event.currentTarget)
+        }
+    `}
+    class='item-card border-t-2 border-b-2 -mb-[2px] last:mb-0 cursor-grab active:cursor-grabbing px-2 py-1'
+    :class={`{'border-t-brand-red border-b-transparent': acceptDrop === 'top','border-b-brand-red border-t-transparent':acceptDrop === 'bottom','border-t-transparent border-b-transparent':acceptDrop === 'none'}`}
 >
     <div
-        draggable
         class='bg-white shadow shadow-slate-300 border-slate-300 text-sm rounded-lg w-full py-1 px-2 relative'
-        ondragstart=''
     >
         <h3>{title}</h3>
         <div class='mt-2'>{content || <>&nbsp;</>}</div>
@@ -54,13 +72,7 @@ const { title, content, id, boardId } = Astro.props
 <script>
     //on dragover
     // (event) => {
-    //     if (event.dataTransfer.types.includes(CONTENT_TYPES.card)) {
-    //         event.preventDefault()
-    //         event.stopPropagation()
-    //         let rect = event.currentTarget.getBoundingClientRect()
-    //         let midpoint = (rect.top + rect.bottom) / 2
-    //         setAcceptDrop(event.clientY <= midpoint ? 'top' : 'bottom')
-    //     }
+
     // }
 
     //on drop leave

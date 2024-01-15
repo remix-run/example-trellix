@@ -17,11 +17,21 @@ const { boardId, column, items } = Astro.props
 ---
 
 <div
-    class={'flex-shrink-0 flex flex-col overflow-hidden max-h-full w-80 border-slate-400 rounded-xl shadow-sm shadow-slate-400 bg-slate-100 the-col' +
-        (true ? `outline outline-2 outline-brand-red` : ``)}
-    ondragover=''
-    ondragleave=''
-    ondrop=''
+    x-data='{acceptDrop:false}'
+    class='flex-shrink-0 flex flex-col overflow-hidden max-h-full w-80 rounded-xl shadow-sm shadow-slate-400 bg-slate-100 the-col'
+    :class={`{'border-2 border-brand-red':acceptDrop}`}
+    x-on:dragover={`
+        if (event.dataTransfer.types.includes('htmx/card') && event.currentTarget.querySelector('ul').children.length === 0) {
+            event.preventDefault()
+            acceptDrop = true
+        }
+    `}
+    x-on:dragleave='acceptDrop=false'
+    x-on:drop.prevent={`
+        acceptDrop=false
+        let child = document.getElementById(event.dataTransfer.getData('htmx/card'))
+        event.currentTarget.querySelector('ul').appendChild(child)
+`}
 >
     <div class='p-2'>
         <EditableColumnTitle

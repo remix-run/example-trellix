@@ -45,6 +45,7 @@ const {
             {action && <input type='hidden' name='action' value={action} />}
             <slot />
             <input
+                x-init='$el.focus();$el.select()'
                 type='text'
                 aria-label={inputLabel}
                 name={fieldName}
@@ -60,6 +61,7 @@ const {
             aria-label={buttonLabel}
             type='button'
             @click='edit = true'
+            @focus='edit = true'
             class={buttonClass}
         >
             {value || <span class='text-slate-400 italic'>Edit</span>}
