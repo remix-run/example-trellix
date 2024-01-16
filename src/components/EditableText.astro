@@ -27,44 +27,46 @@ const {
 ---
 
 <div
-    x-data=`{edit:false}`
+    x-data=`{edit:false,defaultValue:"${value}"}`
     class='editableText'
-    x-init={`$watch('edit', value => {
-    if (edit) {
-        htmx.process(document.querySelector('#${action}-form'))
-    }
-})`}
+    x-init=`$watch('edit', () => {
+        if(edit){
+            setTimeout(() => {
+                $el.querySelector('.editable-text-input').focus()
+                $el.querySelector('.editable-text-input').select()
+            },10)
+        }
+    })`
 >
-    <template x-if='edit'>
-        <form
-            hx-post={hxPost}
-            hx-target={hxTarget}
-            hx-swap={hxSwap}
-            id={`${action}-form`}
-        >
-            {action && <input type='hidden' name='action' value={action} />}
-            <slot />
-            <input
-                x-init='$el.focus();$el.select()'
-                type='text'
-                aria-label={inputLabel}
-                name={fieldName}
-                {value}
-                class={inputClass}
-                @keydown.escape={`edit=false;$el.value='${value}'`}
-                @blur={`edit=false;$el.value='${value}'`}
-            />
-        </form>
-    </template>
-    <template x-if='!edit'>
-        <button
-            aria-label={buttonLabel}
-            type='button'
-            @click='edit = true'
-            @focus='edit = true'
-            class={buttonClass}
-        >
-            {value || <span class='text-slate-400 italic'>Edit</span>}
-        </button>
-    </template>
+    <form
+        x-show='edit'
+        hx-post={hxPost}
+        hx-target={hxTarget}
+        hx-swap={hxSwap}
+        id={`${action}-form`}
+    >
+        {action && <input type='hidden' name='action' value={action} />}
+        <slot />
+        <input
+            type='text'
+            aria-label={inputLabel}
+            name={fieldName}
+            {value}
+            class:list={[inputClass, 'editable-text-input']}
+            @keydown.enter='defaultValue=$el.value;$el.blur();htmx.trigger($el.closest("form"),"submit")'
+            @keydown.escape={`edit=false;$el.value=defaultValue`}
+            @blur={`edit=false;$el.value=defaultValue`}
+        />
+    </form>
+    <button
+        x-show='!edit'
+        x-text='defaultValue'
+        aria-label={buttonLabel}
+        type='button'
+        @click='edit = true'
+        @focus='edit = true'
+        class={buttonClass}
+    >
+        {value || <span class='text-slate-400 italic'>Edit</span>}
+    </button>
 </div>
