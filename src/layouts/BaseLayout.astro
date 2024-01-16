@@ -25,6 +25,24 @@ let userId = Astro.locals.userId
             defer
             src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js'
         ></script>
+        <style is:inline>
+            .htmx-indicator {
+                opacity: 1;
+                display: none;
+            }
+
+            .htmx-request .htmx-indicator {
+                display: inline;
+            }
+
+            .htmx-request.htmx-indicator {
+                display: inline;
+            }
+
+            .htmx-request .btn-content {
+                display: none !important;
+            }
+        </style>
     </head>
     <body class='h-screen bg-slate-100 text-slate-900'>
         <div class='h-full flex flex-col min-h-0'>

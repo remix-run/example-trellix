@@ -20,6 +20,7 @@ const { errors, data } = Astro.props
     hx-post='/signup'
     hx-swap='outerHTML'
     hx-disabled-elt='this'
+    hx-indicator='#signup-btn'
 >
     <div>
         <label
@@ -75,10 +76,13 @@ const { errors, data } = Astro.props
     </div>
 
     <button
+        id='signup-btn'
         type='submit'
         class='flex w-full justify-center rounded-md bg-brand-blue px-1 py-1 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue'
-        >Sign up</button
     >
+        <span class='btn-content'>Sign Up</span>
+        <span class='htmx-indicator'>Loading...</span>
+    </button>
 
     <div class='text-sm text-slate-500'>
         Already have an account?{' '}

@@ -23,6 +23,7 @@ const { boardId, columnId } = Astro.props
             hx-post={`/board/${boardId}`}
             hx-target={`#column-${columnId}`}
             hx-swap='beforeend'
+            hx-indicator=`#new-card-${columnId}`
             hx-on::after-request='this.reset()'
             class='px-2 py-1 border-t-2 border-b-2 border-transparent'
         >
@@ -40,10 +41,14 @@ const { boardId, columnId } = Astro.props
                 @keydown.shift.enter='$refs.saveCard.click()'></textarea>
             <div class='flex justify-between'>
                 <button
+                    id={`new-card-${columnId}`}
                     x-ref='saveCard'
                     class='text-sm rounded-lg text-left p-2 font-medium text-white bg-brand-blue'
-                    type='submit'>Save Card</button
+                    type='submit'
                 >
+                    <span class='btn-content'>Save Card</span>
+                    <span class='htmx-indicator'>Loading...</span>
+                </button>
                 <button
                     @click='edit=false'
                     class='text-sm rounded-lg text-left p-2 font-medium hover:bg-slate-200 focus:bg-slate-200'

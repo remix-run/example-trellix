@@ -8,6 +8,7 @@
     hx-post='/home'
     hx-swap='none'
     class='p-8 max-w-md'
+    hx-indicator='#new-board-btn'
 >
     <div>
         <h2 class='font-bold mb-2 text-xl'>New Board</h2>
@@ -46,10 +47,12 @@
             />
         </div>
         <button
+            id='new-board-btn'
             class='flex w-full justify-center rounded-md bg-brand-blue px-1 py-1 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue'
             type='submit'
         >
-            Create
+            <span class='btn-content'>Create</span>
+            <span class='htmx-indicator'>Loading...</span>
         </button>
     </div>
 </form>
