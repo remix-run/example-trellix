@@ -10,6 +10,7 @@ import { INTENTS } from "./types";
 import {
   createColumn,
   updateColumnName,
+  deleteColumn,
   getBoardData,
   upsertItem,
   updateBoardName,
@@ -74,6 +75,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
       let { name, columnId } = Object.fromEntries(formData);
       if (!name || !columnId) throw badRequest("Missing name or columnId");
       await updateColumnName(String(columnId), String(name), accountId);
+      break;
+    }
+    case INTENTS.deleteColumn: {
+      let { columnId } = Object.fromEntries(formData);
+      if (!columnId) throw badRequest("Missing columnId");
+      await deleteColumn(String(columnId), accountId);
       break;
     }
     default: {

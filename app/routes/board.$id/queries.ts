@@ -75,3 +75,7 @@ export async function createColumn(
     },
   });
 }
+
+export async function deleteColumn(id: string, accountId: string) {
+  return prisma.column.delete({ where: { id, Board: { accountId } } });
+}

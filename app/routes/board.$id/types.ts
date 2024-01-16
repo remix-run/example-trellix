@@ -14,6 +14,7 @@ export const CONTENT_TYPES = {
 export const INTENTS = {
   createColumn: "newColumn" as const,
   updateColumn: "updateColumn" as const,
+  deleteColumn: "deleteColumn" as const,
   createItem: "createItem" as const,
   moveItem: "moveItem" as const,
   moveColumn: "moveColumn" as const,
