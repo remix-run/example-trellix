@@ -9,7 +9,7 @@
     "start": "NODE_ENV=production remix-serve ./build/server/index.js",
     "migrate": "npx prisma migrate dev",
     "typecheck": "tsc",
-    "deploy": "fly deploy"
+    "deploy": "rm -rf build && rm -rf public/build && fly deploy"
   },
   "dependencies": {
     "@prisma/client": "^5.8.0",

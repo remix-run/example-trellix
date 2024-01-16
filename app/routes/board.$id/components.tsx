@@ -74,6 +74,7 @@ export function EditableText({
     >
       {children}
       <input
+        required
         ref={inputRef}
         type="text"
         aria-label={inputLabel}
@@ -89,7 +90,10 @@ export function EditableText({
           }
         }}
         onBlur={(event) => {
-          if (inputRef.current?.value !== value) {
+          if (
+            inputRef.current?.value !== value &&
+            inputRef.current?.value.trim() !== ""
+          ) {
             fetcher.submit(event.currentTarget);
           }
           setEdit(false);
