@@ -94,7 +94,9 @@ export function EditableText({
             inputRef.current?.value !== value &&
             inputRef.current?.value.trim() !== ""
           ) {
-            fetcher.submit(event.currentTarget);
+            fetcher.submit(
+              event.currentTarget.parentElement as HTMLFormElement,
+            );
           }
           setEdit(false);
         }}
