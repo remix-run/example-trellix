@@ -23,7 +23,7 @@ export function NewCard({
   return (
     <Form
       method="post"
-      className="px-2 py-1 border-t-2 border-b-2 border-transparent"
+      className="p-2 pt-1"
       onSubmit={(event) => {
         event.preventDefault();
 

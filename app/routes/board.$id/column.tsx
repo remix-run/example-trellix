@@ -93,7 +93,7 @@ export function Column({ name, columnId, items }: ColumnProps) {
         </EditableText>
       </div>
 
-      <ul ref={listRef} className="flex-grow overflow-auto">
+      <ul ref={listRef} className="flex-grow overflow-auto min-h-[2px]">
         {items
           .sort((a, b) => a.order - b.order)
           .map((item, index, items) => (
@@ -119,7 +119,7 @@ export function Column({ name, columnId, items }: ColumnProps) {
           onComplete={() => setEdit(false)}
         />
       ) : (
-        <div className="p-2">
+        <div className="p-2 pt-1">
           <button
             type="button"
             onClick={() => {
