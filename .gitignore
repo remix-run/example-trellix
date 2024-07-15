@@ -4,4 +4,4 @@ node_modules
 /build
 /public/build
 .env
-/prisma/dev.db
+/prisma/dev.db*
