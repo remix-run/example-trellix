@@ -59,7 +59,7 @@ export function EditableText({
 
   // optimistic update
   if (fetcher.formData?.has(fieldName)) {
-    value = String(fetcher.formData.get("name"));
+    value = String(fetcher.formData.get(fieldName));
   }
 
   return edit ? (
