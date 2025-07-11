@@ -32,7 +32,7 @@ export function NewColumn({
         submit(formData, {
           navigate: false,
           method: "post",
-          unstable_flushSync: true,
+          flushSync: true,
         });
         onAdd();
         invariant(inputRef.current, "missing input ref");
